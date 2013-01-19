@@ -1,0 +1,42 @@
+{
+	"name": "lazy",
+	"version": "0.1.1",
+	"title": "jQuery Lazy Image Loader",
+	"author":
+	{
+		"name": "Daniel 'Eisbehr' Kern",
+		"url": "http://www.eisbehr.de/"
+	},
+	"licenses":
+	[
+		{
+			"type": "MIT",
+			"url": "http://www.opensource.org/licenses/mit-license.php"
+		}
+	],
+    "dependencies":
+    {
+        "jquery": "1"
+    },
+    "description": "The jQuery Lazy plugin is an delayed image loader to speed up you page loading.",
+    "keywords":
+    [
+        "lazy",
+        "image",
+        "iamges"
+        "loader",
+        "load",
+        "speed",
+        "delay",
+        "delayed"
+    ],
+    "homepage": "http://jquery.eisbehr.de/lazy/",
+	"bugs": "http://github.com/eisbehr-/jquery.lazy/issues",
+	"docs": "http://github.com/eisbehr-/jquery.lazy/",
+	"download": "http://github.com/eisbehr-/jquery.lazy/",
+    "files":
+    [
+        "jquery.lazy.js",
+        "jquery.lazy.min.js",
+    ]
+}
