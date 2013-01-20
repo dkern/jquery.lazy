@@ -1,6 +1,6 @@
 {
 	"name": "lazy",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"title": "jQuery Lazy Image Loader",
 	"author":
 	{
@@ -28,7 +28,8 @@
 		"load",
 		"speed",
 		"delay",
-		"delayed"
+		"delayed",
+		"pageload"
 	],
 	"homepage": "http://jquery.eisbehr.de/lazy/",
 	"bugs": "http://github.com/eisbehr-/jquery.lazy/issues",

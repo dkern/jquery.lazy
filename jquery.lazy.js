@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy v0.1.1
+ * jQuery Lazy v0.1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -20,15 +20,18 @@
 		 */
 		var configuration =
 		{
+			delay           : 0,
 			attribute       : "data-src",
 			removeAttribute : true,
+			effect          : "show",
+			effectTime      : 200,
 			threshold       : 300,
+			fallbackHeight  : 2000,
 			visibleOnly     : true,
-			beforeLoad      : null,
-			afterLoad       : null,
 			enableThrottle  : false,
 			throttle        : 250,
-			fallbackHeight  : 2000
+			beforeLoad      : null,
+			afterLoad       : null
 		}
 		
 		// overwrite configuration with custom user settings
@@ -39,7 +42,7 @@
 		
 		// all given items by jQuery selector
 		var items = this;
-		
+				
 		// bind lazy load functions to scroll and resize event
 		$(window).bind("scroll", _throttle(configuration.throttle, lazyLoadImages));
 		$(window).bind("resize", _throttle(configuration.throttle, lazyLoadImages));
@@ -47,7 +50,15 @@
 		// on first page load get initial images
 		$(window).load(function()
 		{
-			lazyLoadImages()
+			// if delay time is set load all images at once
+			if( configuration.delay >= 1 )
+			{
+				setTimeout(lazyLoadImages, configuration.delay);
+			}
+			else
+			{
+				lazyLoadImages()
+			}
 		});
 		
 		/**
@@ -66,20 +77,21 @@
 			{
 				var element = $(this);
 				
-				if( element.attr(configuration.attribute) && (element.is(":visible") || !configuration.visibleOnly) )
+				if( element.attr(configuration.attribute) && 
+					element.attr(configuration.attribute) != element.attr("src") && 
+					(element.is(":visible") || !configuration.visibleOnly) )
 				{
-					if( _isInLoadableArea(element) )
+					if( _isInLoadableArea(element) || configuration.delay >= 1  )
 					{
 						// trigger function before loading image
 						if( configuration.beforeLoad )
 							configuration.beforeLoad(element);
 						
-						element.attr("src", element.attr(configuration.attribute));
+						element.hide().attr("src", element.attr(configuration.attribute))[configuration.effect](configuration.effectTime);
 						
+						// remove attribute after load
 						if( configuration.removeAttribute )
-						{
 							element.removeAttr(configuration.attribute);
-						}
 						
 						// trigger function after loading image
 						if( configuration.afterLoad )
@@ -152,7 +164,7 @@
 		 * @param object function
 		 * @return function object
 		 */
-		function _throttle(delay, callback)
+		function _throttle(delay, call)
 		{			
 			var _timeout;
 			var _exec = 0;
@@ -161,26 +173,21 @@
 			{
 				var elapsed = +new Date() - _exec;
 				
-				function exec()
+				function run()
 				{
 					_exec = +new Date();
-					callback.apply();
-				};
-				
-				function clear()
-				{
-					_timeout = undefined;
+					call.apply();
 				};
 				
 				_timeout && clearTimeout(_timeout);
 				
 				if( elapsed > delay || !configuration.enableThrottle )
 				{
-					exec();
+					run();
 				}
 				else
 				{
-					_timeout = setTimeout(exec, delay - elapsed);
+					_timeout = setTimeout(run, delay - elapsed);
 				}
 			}
 			
