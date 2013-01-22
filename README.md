@@ -1,4 +1,7 @@
-lazy
-====
+jQuery.Lazy();
+==============
 
-jQuery.lazy() is an delayed image loader to speed up page loading time.
+a delayed image loading plugin for jQuery
+
+See documentation, examples and other information on:
+[http://jquery.eisbehr.de/lazy](http://jquery.eisbehr.de/lazy/)

@@ -1,6 +1,6 @@
 {
 	"name": "lazy",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"title": "jQuery Lazy Image Loader",
 	"author":
 	{
@@ -12,6 +12,10 @@
 		{
 			"type": "MIT",
 			"url": "http://www.opensource.org/licenses/mit-license.php"
+		},
+		{
+			"type": "GPL v2",
+			"url": "http://www.gnu.org/licenses/gpl-2.0.html"
 		}
 	],
 	"dependencies":
@@ -32,9 +36,10 @@
 		"pageload"
 	],
 	"homepage": "http://jquery.eisbehr.de/lazy/",
+	"demo": "http://jquery.eisbehr.de/lazy/",
 	"bugs": "http://github.com/eisbehr-/jquery.lazy/issues",
-	"docs": "http://github.com/eisbehr-/jquery.lazy/",
-	"download": "http://github.com/eisbehr-/jquery.lazy/",
+	"docs": "http://jquery.eisbehr.de/lazy/",
+	"download": "http://jquery.eisbehr.de/lazy/",
 	"files":
 	[
 		"jquery.lazy.js",
