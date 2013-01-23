@@ -1,6 +1,6 @@
 {
 	"name": "lazy",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"title": "jQuery Lazy Image Loader",
 	"author":
 	{
@@ -20,9 +20,9 @@
 	],
 	"dependencies":
 	{
-		"jquery": "1"
+		"jquery": ">=1.3.0"
 	},
-	"description": "The jQuery Lazy plugin is an delayed image loader to speed up you page loading.",
+	"description": "The Lazy plugin for jQuery load specified images after the page load itself and speed up your loading time through this. Images outside of the visible area will only get loaded when the user scrolls to them. This will not only increase the page loading speed, it will even decrease your traffic.",
 	"keywords":
 	[
 		"lazy",

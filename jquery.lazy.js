@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.3
+ * jQuery Lazy - v0.1.4
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -11,7 +11,7 @@
  * jQuery("img.lazy").lazy();
  */
 
-(function($, window, undefined)
+(function($, window, document, undefined)
 {
 	$.fn.lazy = function(settings)
 	{
@@ -23,7 +23,7 @@
 		{
 			// general
 			bind            : "load",
-			threshold       : 300,
+			threshold       : 500,
 			fallbackHeight  : 2000,
 			visibleOnly     : true,
 			
@@ -45,7 +45,9 @@
 			
 			// callback
 			beforeLoad      : null,
-			afterLoad       : null
+			onLoad          : null,
+			afterLoad       : null,
+			onError         : null
 		}
 		
 		// overwrite configuration with custom user settings
@@ -57,18 +59,15 @@
 		
 		// on first page load get initial images
 		if( configuration.bind == "load" )
-		{
-			$(window).load(function()
-			{
-				_init();
-			});
-		}
+			$(window).load(_init);
 		
 		// if event driven don't wait for page loading
 		else if( configuration.bind == "event" )
-		{
 			_init();
-		}
+		
+		// bind error callback to images if wanted
+		if( configuration.onError )
+			items.bind("error", function() { configuration.onError($(this)); });
 		
 		/**
 		 * lazyLoadImages(allImages)
@@ -83,34 +82,48 @@
 			if( typeof allImages != "boolean" )
 				allImages = false;
 			
-			// get only item wich have an tag attribute
-			items = items.filter("[" + configuration.attribute + "]");
-			
 			items.each(function()
 			{
 				var element = $(this);
 				
 				if( element.attr(configuration.attribute) && 
 					element.attr(configuration.attribute) != element.attr("src") && 
+					!element.data("loaded") && 
 					(element.is(":visible") || !configuration.visibleOnly) )
 				{
 					if( _isInLoadableArea(element) || allImages  )
 					{
+						// bind after load callback to images if wanted
+						if( configuration.afterLoad )
+							element.bind("load", function() { configuration.afterLoad(element); element.unbind("load"); });
+						
 						// trigger function before loading image
 						if( configuration.beforeLoad )
 							configuration.beforeLoad(element);
 						
-						element.hide().attr("src", element.attr(configuration.attribute))[configuration.effect](configuration.effectTime);
+						// load image
+						element.hide()
+						       .attr("src", element.attr(configuration.attribute))
+						       [configuration.effect](configuration.effectTime);
+						
+						// mark image as loaded
+						element.data("loaded", true);
+						
+						// trigger function before loading image
+						if( configuration.onLoad )
+							configuration.onLoad(element);
 						
 						// remove attribute after load
 						if( configuration.removeAttribute )
 							element.removeAttr(configuration.attribute);
-						
-						// trigger function after loading image
-						if( configuration.afterLoad )
-							configuration.afterLoad(element);
 					}
 				}
+			});
+			
+			// cleanup all items which are allready loaded
+			items = $(items).filter(function()
+			{
+				return !$(this).data("loaded");
 			});
 		}
 		
@@ -126,19 +139,17 @@
 		{
 			// if delay time is set load all images at once after delay time
 			if( configuration.delay >= 0 )
-			{
 				setTimeout(function() { lazyLoadImages(true); }, configuration.delay);
-			}
 			
 			// if no delay is set or combine usage is active bin events
 			if( configuration.delay < 0 || configuration.combined )
 			{
+				// load initial images
+				lazyLoadImages();
+				
 				// bind lazy load functions to scroll and resize event
 				$(window).bind("scroll", _throttle(configuration.throttle, lazyLoadImages));
 				$(window).bind("resize", _throttle(configuration.throttle, lazyLoadImages));
-				
-				// load initial images
-				lazyLoadImages();
 			}
 		}
 		
@@ -174,24 +185,16 @@
 		function _getActualHeight()
 		{
 			if( window.innerHeight )
-			{
 				return window.innerHeight;
-			}
 			
 			if( document.documentElement && document.documentElement.clientHeight )
-			{
 				return document.documentElement.clientHeight;
-			}
 			
 			if( document.body && document.body.clientHeight )
-			{
 				return document.body.clientHeight;
-			}
 			
 			if( document.body && document.body.offsetHeight )
-			{
 				return document.body.offsetHeight;
-			}
 			
 			return configuration.fallbackHeight;
 		}
@@ -206,7 +209,7 @@
 		 * @return function object
 		 */
 		function _throttle(delay, call)
-		{			
+		{
 			var _timeout;
 			var _exec = 0;
 			
@@ -223,13 +226,9 @@
 				_timeout && clearTimeout(_timeout);
 				
 				if( elapsed > delay || !configuration.enableThrottle )
-				{
 					run();
-				}
 				else
-				{
 					_timeout = setTimeout(run, delay - elapsed);
-				}
 			}
 			
 			return callable;
@@ -241,4 +240,4 @@
 	// make lazy a bit more caseinsensitive :)
 	$.fn.Lazy = $.fn.lazy;
 }
-)(jQuery, window);
+)(jQuery, window, document);
