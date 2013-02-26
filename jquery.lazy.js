@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.4
+ * jQuery Lazy - v0.1.5
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -156,11 +156,10 @@
 		/**
 		 * _isInLoadableArea(element)
 		 * 
-		 * try to allocate current viewport height of the browser
-		 * uses fallback option when no height was found
+		 * check if the given element is inside the current viewport or threshold
 		 * 
 		 * @param jQuery element
-		 * @return integer
+		 * @return boolean
 		 */
 		function _isInLoadableArea(element)
 		{
