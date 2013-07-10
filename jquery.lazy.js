@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.6
+ * jQuery Lazy - v0.1.7
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -17,7 +17,7 @@
 	{
 		/**
 		 * settings and configuration data
-		 * @var array
+		 * @type {}
 		 */
 		var configuration =
 		{
@@ -48,7 +48,7 @@
 			onLoad          : null,
 			afterLoad       : null,
 			onError         : null
-		}
+		};
 		
 		// overwrite configuration with custom user settings
 		if( settings )
@@ -68,13 +68,13 @@
 		// bind error callback to images if wanted
 		if( configuration.onError )
 			items.bind("error", function() { configuration.onError($(this)); });
-		
+        
 		/**
 		 * lazyLoadImages(allImages)
 		 * 
 		 * check and load all needed images
 		 * 
-		 * @param boolean allImages
+		 * @param allImages boolean
 		 * @return void
 		 */
 		function lazyLoadImages(allImages)
@@ -85,39 +85,98 @@
 			items.each(function()
 			{
 				var element = $(this);
-				
-				if( element.attr(configuration.attribute) && 
-					element.attr(configuration.attribute) != element.attr("src") && 
-					!element.data("loaded") && 
-					(element.is(":visible") || !configuration.visibleOnly) )
-				{
-					if( _isInLoadableArea(element) || allImages  )
-					{
-						// bind after load callback to images if wanted
-						if( configuration.afterLoad )
-							element.bind("load", function() { configuration.afterLoad(element); element.unbind("load"); });
-						
-						// trigger function before loading image
-						if( configuration.beforeLoad )
-							configuration.beforeLoad(element);
-						
-						// load image
-						element.hide()
-						       .attr("src", element.attr(configuration.attribute))
-						       [configuration.effect](configuration.effectTime);
-						
-						// mark image as loaded
-						element.data("loaded", true);
-						
-						// trigger function before loading image
-						if( configuration.onLoad )
-							configuration.onLoad(element);
-						
-						// remove attribute after load
-						if( configuration.removeAttribute )
-							element.removeAttr(configuration.attribute);
-					}
-				}
+                var buffer = null;
+                var tag = element.prop("tagName").toLowerCase();
+                
+                if( _isInLoadableArea(element) || allImages )
+                {
+                    // if we handle not an img tag create an dummy to use callbacks
+                    if( tag != "img" )
+                    {
+                        buffer = element;
+                        element = $("<img/>").attr(configuration.attribute, buffer.attr(configuration.attribute));
+
+                        if( configuration.onError )
+                            items.bind("error", function() { configuration.onError(element); });
+                        
+                        if( buffer.css("background-image") != "none" )
+                        {
+                            element.attr("src", buffer.css("background-image"));
+                        }
+                    }
+                    
+                    // the lazy magic
+                    if( element.attr(configuration.attribute) &&
+                        element.attr(configuration.attribute) != element.attr("src") &&
+                        !element.data("loaded") &&
+                        (element.is(":visible") || buffer.is(":visible") || !configuration.visibleOnly) )
+                    {
+                        // bind after load callback to images if wanted
+                        var onLoad = true;
+                        if( configuration.afterLoad )
+                            element.bind("load", function()
+                            {
+                                var callable = function()
+                                {
+                                    if( onLoad )
+                                    {
+                                        window.setTimeout(callable, 100);
+                                        return;
+                                    }
+                                    
+                                    configuration.afterLoad(element);
+                                    element.unbind("load");
+                                };
+
+                                callable();
+                            });
+
+                        // trigger function before loading image
+                        if( configuration.beforeLoad )
+                            configuration.beforeLoad(element);
+                        
+                        // remove from view
+                        if( buffer == null && tag == "img" )
+                            element.hide();
+                        
+                        // set source
+                        element.attr("src", element.attr(configuration.attribute));
+
+                        // trigger function before loading image
+                        if( configuration.onLoad )
+                            configuration.onLoad(element);
+                        onLoad = false;
+                        
+                        // bring it back with some effect!
+                        if( buffer == null && tag == "img" )
+                            element[configuration.effect](configuration.effectTime);
+                        
+                        // mark image as loaded
+                        element.data("loaded", true);
+                        
+                        // remove attribute after load
+                        if( configuration.removeAttribute )
+                            element.removeAttr(configuration.attribute);
+                    }
+                    
+                    // did we use an buffer? well, then handle the element
+                    if( buffer != null && tag != "img" )
+                    {
+                        buffer.css("background-image", "url(" + element.attr("src") + ")");
+                        buffer.data("loaded", true);
+                        
+                        // remove attribute
+                        if( configuration.removeAttribute )
+                            buffer.removeAttr(configuration.attribute);
+                        
+                        element.remove();
+                        
+                        // bring it back, even here
+                        buffer.hide()
+                              .attr("src", element.attr(configuration.attribute))
+                              [configuration.effect](configuration.effectTime);
+                    }
+                }
 			});
 			
 			// cleanup all items which are allready loaded
@@ -126,7 +185,7 @@
 				return !$(this).data("loaded");
 			});
 		}
-		
+        
 		/**
 		 * _init()
 		 *
@@ -145,7 +204,7 @@
 			if( configuration.delay < 0 || configuration.combined )
 			{
 				// load initial images
-				lazyLoadImages();
+				lazyLoadImages(false);
 				
 				// bind lazy load functions to scroll and resize event
 				$(window).bind("scroll", _throttle(configuration.throttle, lazyLoadImages));
@@ -158,19 +217,13 @@
 		 * 
 		 * check if the given element is inside the current viewport or threshold
 		 * 
-		 * @param jQuery element
+		 * @param element jQuery
 		 * @return boolean
 		 */
 		function _isInLoadableArea(element)
 		{
 			var top = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop;
-			
-			if( (top + _getActualHeight() + configuration.threshold) > (element.offset().top + element.height()) )
-			{
-				return true;
-			}
-			
-			return false;
+			return (top + _getActualHeight() + configuration.threshold) > (element.offset().top + element.height());
 		}
 		
 		/**
@@ -179,7 +232,7 @@
 		 * try to allocate current viewport height of the browser
 		 * uses fallback option when no height is found
 		 * 
-		 * @return integer
+		 * @return Number
 		 */
 		function _getActualHeight()
 		{
@@ -203,8 +256,8 @@
 		 * 
 		 * helper function to throttle down event triggering
 		 * 
-		 * @param integer delay
-		 * @param object function call
+		 * @param delay integer
+		 * @param call function object
 		 * @return function object
 		 */
 		function _throttle(delay, call)
@@ -220,7 +273,7 @@
 				{
 					_exec = +new Date();
 					call.apply();
-				};
+				}
 				
 				_timeout && clearTimeout(_timeout);
 				
@@ -234,7 +287,7 @@
 		}
 		
 		return this;
-	}
+	};
 	
 	// make lazy a bit more caseinsensitive :)
 	$.fn.Lazy = $.fn.lazy;
