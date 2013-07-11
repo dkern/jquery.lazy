@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.7
+ * jQuery Lazy - v0.1.8
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -85,7 +85,7 @@
 			items.each(function()
 			{
 				var element = $(this);
-                var buffer = null;
+                var virtual = null;
                 var tag = element.prop("tagName").toLowerCase();
                 
                 if( _isInLoadableArea(element) || allImages )
@@ -93,15 +93,15 @@
                     // if we handle not an img tag create an dummy to use callbacks
                     if( tag != "img" )
                     {
-                        buffer = element;
-                        element = $("<img/>").attr(configuration.attribute, buffer.attr(configuration.attribute));
+                        virtual = element;
+                        element = $("<img/>").attr(configuration.attribute, virtual.attr(configuration.attribute));
 
                         if( configuration.onError )
                             items.bind("error", function() { configuration.onError(element); });
                         
-                        if( buffer.css("background-image") != "none" )
+                        if( virtual.css("background-image") != "none" )
                         {
-                            element.attr("src", buffer.css("background-image"));
+                            element.attr("src", virtual.css("background-image"));
                         }
                     }
                     
@@ -109,7 +109,7 @@
                     if( element.attr(configuration.attribute) &&
                         element.attr(configuration.attribute) != element.attr("src") &&
                         !element.data("loaded") &&
-                        (element.is(":visible") || buffer.is(":visible") || !configuration.visibleOnly) )
+                        (element.is(":visible") || (virtual != null && virtual.is(":visible")) || !configuration.visibleOnly) )
                     {
                         // bind after load callback to images if wanted
                         var onLoad = true;
@@ -136,7 +136,7 @@
                             configuration.beforeLoad(element);
                         
                         // remove from view
-                        if( buffer == null && tag == "img" )
+                        if( virtual == null && tag == "img" )
                             element.hide();
                         
                         // set source
@@ -148,7 +148,7 @@
                         onLoad = false;
                         
                         // bring it back with some effect!
-                        if( buffer == null && tag == "img" )
+                        if( virtual == null && tag == "img" )
                             element[configuration.effect](configuration.effectTime);
                         
                         // mark image as loaded
@@ -159,22 +159,22 @@
                             element.removeAttr(configuration.attribute);
                     }
                     
-                    // did we use an buffer? well, then handle the element
-                    if( buffer != null && tag != "img" )
+                    // did we use an virtual element? well, then handle the element
+                    if( virtual != null && tag != "img" )
                     {
-                        buffer.css("background-image", "url(" + element.attr("src") + ")");
-                        buffer.data("loaded", true);
+                        virtual.css("background-image", "url(" + element.attr("src") + ")");
+                        virtual.data("loaded", true);
                         
                         // remove attribute
                         if( configuration.removeAttribute )
-                            buffer.removeAttr(configuration.attribute);
+                            virtual.removeAttr(configuration.attribute);
                         
                         element.remove();
                         
                         // bring it back, even here
-                        buffer.hide()
-                              .attr("src", element.attr(configuration.attribute))
-                              [configuration.effect](configuration.effectTime);
+                        virtual.hide()
+                               .attr("src", element.attr(configuration.attribute))
+                               [configuration.effect](configuration.effectTime);
                     }
                 }
 			});
