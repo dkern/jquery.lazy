@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.8
+ * jQuery Lazy - v0.1.9
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -85,96 +85,95 @@
 			items.each(function()
 			{
 				var element = $(this);
-                var virtual = null;
                 var tag = element.prop("tagName").toLowerCase();
                 
                 if( _isInLoadableArea(element) || allImages )
                 {
-                    // if we handle not an img tag create an dummy to use callbacks
-                    if( tag != "img" )
-                    {
-                        virtual = element;
-                        element = $("<img/>").attr(configuration.attribute, virtual.attr(configuration.attribute));
-
-                        if( configuration.onError )
-                            items.bind("error", function() { configuration.onError(element); });
-                        
-                        if( virtual.css("background-image") != "none" )
-                        {
-                            element.attr("src", virtual.css("background-image"));
-                        }
-                    }
-                    
                     // the lazy magic
-                    if( element.attr(configuration.attribute) &&
-                        element.attr(configuration.attribute) != element.attr("src") &&
+                    if( // image source attribute is available
+                        element.attr(configuration.attribute) && 
+                        // and is image tag where attribute is not equal source 
+                        ((tag == "img" && element.attr(configuration.attribute) != element.attr("src")) ||
+                        // or is non image tag where attribute is not equal background
+                        ((tag != "img" && element.attr(configuration.attribute) != element.css("background-image"))) ) &&
+                        // and is not actually loaded just before
                         !element.data("loaded") &&
-                        (element.is(":visible") || (virtual != null && virtual.is(":visible")) || !configuration.visibleOnly) )
+                        // and is visible or visibility doesn't matter
+                        (element.is(":visible") || !configuration.visibleOnly) )
                     {
-                        // bind after load callback to images if wanted
-                        var onLoad = true;
-                        if( configuration.afterLoad )
-                            element.bind("load", function()
+                        // create image object
+                        var imageObj = $(new Image());
+                        
+                        // copy element information to pseudo image beacuse we return this element in "onLoad" and "onError"
+                        $.each(element.prop("attributes"), function(index, attr)
+                        {
+                            if( attr.name != "src" )
                             {
-                                var callable = function()
+                                // i know, there is a shorter way to do the following
+                                // but this is the beste worktaround for ie6/7
+                                var value = element.attr(attr.name);
+                                imageObj.attr(attr.name, value);
+                            }
+                        });
+                        
+                        // bind error event if wanted
+                        if( configuration.onError )
+                            imageObj.error(function() { configuration.onError(imageObj); });
+                        
+                        // bind after load callback to image
+                        var onLoad = true;
+                        imageObj.one("load", function()
+                        {
+                            var callable = function()
+                            {
+                                if( onLoad )
                                 {
-                                    if( onLoad )
-                                    {
-                                        window.setTimeout(callable, 100);
-                                        return;
-                                    }
-                                    
-                                    configuration.afterLoad(element);
-                                    element.unbind("load");
-                                };
+                                    window.setTimeout(callable, 100);
+                                    return;
+                                }
+                                
+                                // remove element from view
+                                element.hide();
+                                
+                                // set image back to element
+                                if( tag == "img" )
+                                    element.attr("src", imageObj.attr("src"));
+                                else
+                                    element.css("background-image", "url(" + imageObj.attr("src") + ")");
 
-                                callable();
-                            });
-
+                                // bring it back with some effect!
+                                element[configuration.effect](configuration.effectTime);
+                                
+                                // remove attribute from element
+                                if( configuration.removeAttribute ) element.removeAttr(configuration.attribute);
+                                
+                                // call after load event
+                                if( configuration.afterLoad ) configuration.afterLoad(element);
+                                
+                                // unbind event and remove image object
+                                imageObj.unbind("load");
+                                imageObj.remove();
+                            };
+                            
+                            callable();
+                        });
+                        
                         // trigger function before loading image
                         if( configuration.beforeLoad )
                             configuration.beforeLoad(element);
                         
-                        // remove from view
-                        if( virtual == null && tag == "img" )
-                            element.hide();
-                        
                         // set source
-                        element.attr("src", element.attr(configuration.attribute));
+                        imageObj.attr("src", element.attr(configuration.attribute));
 
                         // trigger function before loading image
-                        if( configuration.onLoad )
-                            configuration.onLoad(element);
+                        if( configuration.onLoad ) configuration.onLoad(imageObj);
                         onLoad = false;
                         
-                        // bring it back with some effect!
-                        if( virtual == null && tag == "img" )
-                            element[configuration.effect](configuration.effectTime);
+                        // call after load even on cached image
+                        if( imageObj.complete ) imageObj.load();
                         
-                        // mark image as loaded
+                        // mark element always as loaded
                         element.data("loaded", true);
-                        
-                        // remove attribute after load
-                        if( configuration.removeAttribute )
-                            element.removeAttr(configuration.attribute);
-                    }
-                    
-                    // did we use an virtual element? well, then handle the element
-                    if( virtual != null && tag != "img" )
-                    {
-                        virtual.css("background-image", "url(" + element.attr("src") + ")");
-                        virtual.data("loaded", true);
-                        
-                        // remove attribute
-                        if( configuration.removeAttribute )
-                            virtual.removeAttr(configuration.attribute);
-                        
-                        element.remove();
-                        
-                        // bring it back, even here
-                        virtual.hide()
-                               .attr("src", element.attr(configuration.attribute))
-                               [configuration.effect](configuration.effectTime);
                     }
                 }
 			});
