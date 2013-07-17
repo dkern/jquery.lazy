@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.9
+ * jQuery Lazy - v0.1.10
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -19,7 +19,7 @@
 		 * settings and configuration data
 		 * @type {}
 		 */
-		var configuration =
+		var configuration = 
 		{
 			// general
 			bind            : "load",
@@ -51,27 +51,24 @@
 		};
 		
 		// overwrite configuration with custom user settings
-		if( settings )
-			$.extend(configuration, settings);
+		if( settings ) $.extend(configuration, settings);
 		
 		// all given items by jQuery selector
 		var items = this;
 		
 		// on first page load get initial images
-		if( configuration.bind == "load" )
-			$(window).load(_init);
+		if( configuration.bind == "load" ) $(window).load(_init);
 		
 		// if event driven don't wait for page loading
-		else if( configuration.bind == "event" )
-			_init();
+		else if( configuration.bind == "event" ) _init();
 		
 		// bind error callback to images if wanted
-		if( configuration.onError )
-			items.bind("error", function() { configuration.onError($(this)); });
+		if( configuration.onError ) items.bind("error", function() { configuration.onError($(this)); });
         
 		/**
 		 * lazyLoadImages(allImages)
 		 * 
+         * the 'lazy magic'
 		 * check and load all needed images
 		 * 
 		 * @param allImages boolean
@@ -79,8 +76,7 @@
 		 */
 		function lazyLoadImages(allImages)
 		{
-			if( typeof allImages != "boolean" )
-				allImages = false;
+			if( typeof allImages != "boolean" ) allImages = false;
 			
 			items.each(function()
 			{
@@ -117,8 +113,7 @@
                         });
                         
                         // bind error event if wanted
-                        if( configuration.onError )
-                            imageObj.error(function() { configuration.onError(imageObj); });
+                        if( configuration.onError ) imageObj.error(function() { configuration.onError(imageObj); });
                         
                         // bind after load callback to image
                         var onLoad = true;
@@ -136,11 +131,9 @@
                                 element.hide();
                                 
                                 // set image back to element
-                                if( tag == "img" )
-                                    element.attr("src", imageObj.attr("src"));
-                                else
-                                    element.css("background-image", "url(" + imageObj.attr("src") + ")");
-
+                                if( tag == "img" ) element.attr("src", imageObj.attr("src"));
+                                else element.css("background-image", "url(" + imageObj.attr("src") + ")");
+                                
                                 // bring it back with some effect!
                                 element[configuration.effect](configuration.effectTime);
                                 
@@ -159,8 +152,7 @@
                         });
                         
                         // trigger function before loading image
-                        if( configuration.beforeLoad )
-                            configuration.beforeLoad(element);
+                        if( configuration.beforeLoad ) configuration.beforeLoad(element);
                         
                         // set source
                         imageObj.attr("src", element.attr(configuration.attribute));
@@ -196,10 +188,9 @@
 		function _init()
 		{
 			// if delay time is set load all images at once after delay time
-			if( configuration.delay >= 0 )
-				setTimeout(function() { lazyLoadImages(true); }, configuration.delay);
+			if( configuration.delay >= 0 ) setTimeout(function() { lazyLoadImages(true); }, configuration.delay);
 			
-			// if no delay is set or combine usage is active bin events
+			// if no delay is set or combine usage is active bind events
 			if( configuration.delay < 0 || configuration.combined )
 			{
 				// load initial images
@@ -231,21 +222,14 @@
 		 * try to allocate current viewport height of the browser
 		 * uses fallback option when no height is found
 		 * 
-		 * @return Number
+		 * @return number
 		 */
 		function _getActualHeight()
 		{
-			if( window.innerHeight )
-				return window.innerHeight;
-			
-			if( document.documentElement && document.documentElement.clientHeight )
-				return document.documentElement.clientHeight;
-			
-			if( document.body && document.body.clientHeight )
-				return document.body.clientHeight;
-			
-			if( document.body && document.body.offsetHeight )
-				return document.body.offsetHeight;
+			if( window.innerHeight ) return window.innerHeight;
+			if( document.documentElement && document.documentElement.clientHeight ) return document.documentElement.clientHeight;
+			if( document.body && document.body.clientHeight ) return document.body.clientHeight;
+			if( document.body && document.body.offsetHeight ) return document.body.offsetHeight;
 			
 			return configuration.fallbackHeight;
 		}
@@ -276,10 +260,8 @@
 				
 				_timeout && clearTimeout(_timeout);
 				
-				if( elapsed > delay || !configuration.enableThrottle )
-					run();
-				else
-					_timeout = setTimeout(run, delay - elapsed);
+				if( elapsed > delay || !configuration.enableThrottle ) run();
+				else _timeout = setTimeout(run, delay - elapsed);
 			}
 			
 			return callable;
