@@ -101,16 +101,20 @@
                         var imageObj = $(new Image());
 
                         // copy element information to pseudo image because we return this element in "onLoad" and "onError"
-                        $.each(this.attributes, function(index, attr)
-                        {
-                            if( attr.name != "src" )
+                       	//Only if onLoad or on Error exists
+			if(configuration.onError || configuration.onLoad)
+			{		
+                            $.each(this.attributes, function(index, attr)
                             {
-                                // i know, there is a shorter way to do the following
-                                // but this is the best workaround for ie6/7
-                                var value = element.attr(attr.name);
-                                imageObj.attr(attr.name, value);
-                            }
-                        });
+                                if( attr.name != "src" )
+                                {
+                       		    // i know, there is a shorter way to do the following
+                        	    // but this is the best workaround for ie6/7
+                        	    var value = element.attr(attr.name);
+                       		    imageObj.attr(attr.name, value);
+			        }
+                            });
+                        }
 
                         // bind error event if wanted
                         if( configuration.onError ) imageObj.error(function() { configuration.onError(imageObj); });
