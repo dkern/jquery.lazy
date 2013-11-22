@@ -216,8 +216,9 @@
          */
         function _isInLoadableArea(element)
         {
-            var top = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop;
-            return (top + _getActualHeight() + configuration.threshold) > (element.offset().top + element.height());
+            var top = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop,
+                offsetTop = element.offset().top;
+            return (top + _getActualHeight() + configuration.threshold) > (offsetTop + element.height()) && offsetTop > (top - configuration.threshold);
         }
 
         /**
