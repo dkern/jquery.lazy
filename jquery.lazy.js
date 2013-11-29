@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.11
+ * jQuery Lazy - v0.1.12
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -101,16 +101,19 @@
                         var imageObj = $(new Image());
 
                         // copy element information to pseudo image because we return this element in "onLoad" and "onError"
-                        $.each(this.attributes, function(index, attr)
+                        if( configuration.onLoad || configuration.onError )
                         {
-                            if( attr.name != "src" )
+                            $.each(this.attributes, function(index, attr)
                             {
-                                // i know, there is a shorter way to do the following
-                                // but this is the best workaround for ie6/7
-                                var value = element.attr(attr.name);
-                                imageObj.attr(attr.name, value);
-                            }
-                        });
+                                if( attr.name != "src" )
+                                {
+                                    // i know, there is a shorter way to do the following
+                                    // but this is the best workaround for ie6/7
+                                    var value = element.attr(attr.name);
+                                    imageObj.attr(attr.name, value);
+                                }
+                            });
+                        }
 
                         // bind error event if wanted
                         if( configuration.onError ) imageObj.error(function() { configuration.onError(imageObj); });
