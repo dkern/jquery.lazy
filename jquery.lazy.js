@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.13
+ * jQuery Lazy - v0.1.14
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -101,7 +101,7 @@
                         var imageObj = $(new Image());
 
                         // bind error event if wanted
-						if(configuration.onError) imageObj.error(function() { _triggerCallback(configuration.onError, element); });
+                        if(configuration.onError) imageObj.error(function() { _triggerCallback(configuration.onError, element); });
 
                         // bind after load callback to image
                         var onLoad = true;
@@ -129,7 +129,7 @@
                                 if( configuration.removeAttribute ) element.removeAttr(configuration.attribute);
 
                                 // call after load event
-								_triggerCallback(configuration.afterLoad, element);
+                                _triggerCallback(configuration.afterLoad, element);
 
                                 // unbind event and remove image object
                                 imageObj.unbind("load");
@@ -140,13 +140,13 @@
                         });
 
                         // trigger function before loading image
-						_triggerCallback(configuration.beforeLoad, element);
+                        _triggerCallback(configuration.beforeLoad, element);
 
                         // set source
                         imageObj.attr("src", element.attr(configuration.attribute));
 
                         // trigger function before loading image
-						_triggerCallback(configuration.onLoad, element);
+                        _triggerCallback(configuration.onLoad, element);
                         onLoad = false;
 
                         // call after load even on cached image
@@ -255,19 +255,19 @@
             return callable;
         }
 
-		/**
-		 * _triggerCallback(callback, tag, element, imageObj)
-		 *
-		 * single implementation to handle callbacks and pass parameter
-		 *
-		 * @param callback function object
-		 * @param element jQuery
-		 * @return void
-		 */
-		function _triggerCallback(callback, element)
-		{
-			if( callback ) callback(element);
-		}
+        /**
+         * _triggerCallback(callback, tag, element, imageObj)
+         *
+         * single implementation to handle callbacks and pass parameter
+         *
+         * @param callback function object
+         * @param element jQuery
+         * @return void
+         */
+        function _triggerCallback(callback, element)
+        {
+            if( callback ) callback(element);
+        }
 
         return this;
     };
