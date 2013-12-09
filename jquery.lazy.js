@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.12
+ * jQuery Lazy - v0.1.13
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -63,7 +63,7 @@
         else if( configuration.bind == "event" ) _init();
 
         // bind error callback to images if wanted
-        if( configuration.onError ) items.bind("error", function() { configuration.onError($(this)); });
+        if( configuration.onError ) items.bind("error", function() { _triggerCallback(configuration.onError, $(this)); });
 
         /**
          * lazyLoadImages(allImages)
@@ -97,26 +97,11 @@
                         // and is visible or visibility doesn't matter
                         (element.is(":visible") || !configuration.visibleOnly) )
                     {
-                        // create image object
+                        // create image object						
                         var imageObj = $(new Image());
 
-                        // copy element information to pseudo image because we return this element in "onLoad" and "onError"
-                        if( configuration.onLoad || configuration.onError )
-                        {
-                            $.each(this.attributes, function(index, attr)
-                            {
-                                if( attr.name != "src" )
-                                {
-                                    // i know, there is a shorter way to do the following
-                                    // but this is the best workaround for ie6/7
-                                    var value = element.attr(attr.name);
-                                    imageObj.attr(attr.name, value);
-                                }
-                            });
-                        }
-
                         // bind error event if wanted
-                        if( configuration.onError ) imageObj.error(function() { configuration.onError(imageObj); });
+						if(configuration.onError) imageObj.error(function() { _triggerCallback(configuration.onError, element); });
 
                         // bind after load callback to image
                         var onLoad = true;
@@ -144,7 +129,7 @@
                                 if( configuration.removeAttribute ) element.removeAttr(configuration.attribute);
 
                                 // call after load event
-                                if( configuration.afterLoad ) configuration.afterLoad(element);
+								_triggerCallback(configuration.afterLoad, element);
 
                                 // unbind event and remove image object
                                 imageObj.unbind("load");
@@ -155,13 +140,13 @@
                         });
 
                         // trigger function before loading image
-                        if( configuration.beforeLoad ) configuration.beforeLoad(element);
+						_triggerCallback(configuration.beforeLoad, element);
 
                         // set source
                         imageObj.attr("src", element.attr(configuration.attribute));
 
                         // trigger function before loading image
-                        if( configuration.onLoad ) configuration.onLoad(imageObj);
+						_triggerCallback(configuration.onLoad, element);
                         onLoad = false;
 
                         // call after load even on cached image
@@ -269,6 +254,20 @@
 
             return callable;
         }
+
+		/**
+		 * _triggerCallback(callback, tag, element, imageObj)
+		 *
+		 * single implementation to handle callbacks and pass parameter
+		 *
+		 * @param callback function object
+		 * @param element jQuery
+		 * @return void
+		 */
+		function _triggerCallback(callback, element)
+		{
+			if( callback ) callback(element);
+		}
 
         return this;
     };
