@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.14
+ * jQuery Lazy - v0.1.15
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2013, Daniel 'Eisbehr' Kern
@@ -26,6 +26,7 @@
             threshold       : 500,
             fallbackHeight  : 2000,
             visibleOnly     : true,
+            appendScroll    : window,
 
             // delay
             delay           : -1,
@@ -185,8 +186,8 @@
                 lazyLoadImages(false);
 
                 // bind lazy load functions to scroll and resize event
-                $(window).bind("scroll", _throttle(configuration.throttle, lazyLoadImages));
-                $(window).bind("resize", _throttle(configuration.throttle, lazyLoadImages));
+                $(configuration.appendScroll).bind("scroll", _throttle(configuration.throttle, lazyLoadImages));
+                $(configuration.appendScroll).bind("resize", _throttle(configuration.throttle, lazyLoadImages));
             }
         }
 
