@@ -1,8 +1,9 @@
 /*!
- * jQuery Lazy - v0.1.15
+ * jQuery Lazy - v0.1.16
  * http://jquery.eisbehr.de/lazy/
+ * http://eisbehr.de
  *
- * Copyright 2013, Daniel 'Eisbehr' Kern
+ * Copyright 2014, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL v2 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -48,7 +49,8 @@
             beforeLoad      : null,
             onLoad          : null,
             afterLoad       : null,
-            onError         : null
+            onError         : null,
+            onFinishedAll   : null
         };
 
         // overwrite configuration with custom user settings
@@ -56,6 +58,9 @@
 
         // all given items by jQuery selector
         var items = this;
+
+        // a helper to trigger the onFinishedAll after all other events
+        var awaitingAfterload = 0;
 
         // on first page load get initial images
         if( configuration.bind == "load" ) $(window).load(_init);
@@ -101,8 +106,12 @@
                         // create image object						
                         var imageObj = $(new Image());
 
-                        // bind error event if wanted
-                        if(configuration.onError) imageObj.error(function() { _triggerCallback(configuration.onError, element); });
+                        // increment count of items waiting for after load
+                        ++awaitingAfterload;
+
+                        // bind error event if wanted, otherwise only reduce waiting count
+                        if(configuration.onError) imageObj.error(function() { _triggerCallback(configuration.onError, element); _reduceAwaiting(); });
+                        else imageObj.error(function() { _reduceAwaiting(); });
 
                         // bind after load callback to image
                         var onLoad = true;
@@ -135,6 +144,9 @@
                                 // unbind event and remove image object
                                 imageObj.unbind("load");
                                 imageObj.remove();
+
+                                // remove item from waiting cue and possible trigger finished event
+                                _reduceAwaiting();
                             };
 
                             callable();
@@ -257,6 +269,21 @@
         }
 
         /**
+         * _reduceAwaiting()
+         *
+         * reduce count of awaiting elements to the afterLoad event and fire onFinishedAll if reached zero
+         *
+         * @return void
+         */
+        function _reduceAwaiting()
+        {
+            --awaitingAfterload;
+            
+            // if no items were left trigger finished event 
+            if( !items.size() && !awaitingAfterload ) _triggerCallback(configuration.onFinishedAll, null);
+        }
+
+        /**
          * _triggerCallback(callback, tag, element, imageObj)
          *
          * single implementation to handle callbacks and pass parameter
@@ -267,7 +294,13 @@
          */
         function _triggerCallback(callback, element)
         {
-            if( callback ) callback(element);
+            if( callback )
+            {
+                if( element !== null )
+                    callback(element);
+                else
+                    callback();
+            }
         }
 
         return this;

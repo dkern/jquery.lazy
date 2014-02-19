@@ -1,11 +1,11 @@
 {
 	"name": "lazy",
-	"version": "0.1.15",
+	"version": "0.1.16",
 	"title": "jQuery Lazy Image Loader",
 	"author":
 	{
 		"name": "Daniel 'Eisbehr' Kern",
-		"url": "http://www.eisbehr.de/"
+		"url": "http://eisbehr.de/"
 	},
 	"licenses":
 	[
