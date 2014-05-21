@@ -1,0 +1,14 @@
+{
+	"name": "jquery-lazy",
+	"version": "0.1.17",
+	"main": "jquery.lazy.min.js",
+	"ignore":
+	[
+		"*.md",
+		"*.json"
+	],
+	"dependencies":
+	{
+		"jquery": ">=1.3.0"
+	},
+}

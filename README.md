@@ -4,8 +4,7 @@ Lazy is a delayed image loading plugin for jQuery. It is designed to speed up pa
 
 Documentation / Examples
 ========================
-For documentation, examples and other information take a look on the project page:
-[http://jquery.eisbehr.de/lazy](http://jquery.eisbehr.de/lazy/)
+For documentation, examples and other information take a look on the [project page](http://jquery.eisbehr.de/lazy/).
 
 Basic Usage
 ===========
@@ -13,8 +12,10 @@ The basic usage is quite simple. Just change the image tags and add Lazy to all 
 ```HTML
 <img class="lazy" data-src="path/to/image_to_load.jpg" src="" />
 ```
-```HTML
-<script type="text/javascript">
+```JS
 jQuery("img.lazy").Lazy();
-</script>
 ```
+
+Bower Package Manager
+=====================
+Lazy is available through [Bower](http://bower.io). Just use `bower install jquery-lazy`.
