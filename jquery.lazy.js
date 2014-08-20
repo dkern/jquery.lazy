@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.18
+ * jQuery Lazy - v0.1.19
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -60,7 +60,7 @@
         var items = this;
 
         // a helper to trigger the onFinishedAll after all other events
-        var awaitingAfterload = 0;
+        var awaitingAfterLoad = 0;
 
         // on first page load get initial images
         if( configuration.bind == "load" ) $(window).load(_init);
@@ -107,7 +107,7 @@
                         var imageObj = $(new Image());
 
                         // increment count of items waiting for after load
-                        ++awaitingAfterload;
+                        ++awaitingAfterLoad;
 
                         // bind error event if wanted, otherwise only reduce waiting count
                         if(configuration.onError) imageObj.error(function() { _triggerCallback(configuration.onError, element); _reduceAwaiting(); });
@@ -277,14 +277,14 @@
          */
         function _reduceAwaiting()
         {
-            --awaitingAfterload;
-            
+            --awaitingAfterLoad;
+
             // if no items were left trigger finished event 
-            if( !items.size() && !awaitingAfterload ) _triggerCallback(configuration.onFinishedAll, null);
+            if( !items.size() && !awaitingAfterLoad ) _triggerCallback(configuration.onFinishedAll, null);
         }
 
         /**
-         * _triggerCallback(callback, tag, element, imageObj)
+         * _triggerCallback(callback, element)
          *
          * single implementation to handle callbacks and pass parameter
          *
