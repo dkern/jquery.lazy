@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.1.19
+ * jQuery Lazy - v0.2.1
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -213,14 +213,37 @@
          */
         function _isInLoadableArea(element)
         {
-            var top = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop;
-            return (top + _getActualHeight() + configuration.threshold) > (element.offset().top + element.height());
+            var scrolledFromTop  = _getScrolledFromTop(),
+                viewedHeight     = _getActualHeight(),
+                elementTopOffset = element.offset().top,
+                elementHeight    = element.height();
+
+                   // check if element is in loadable area from top
+            return ((scrolledFromTop + viewedHeight + configuration.threshold) > elementTopOffset) &&  
+                   // check if element is even in loadable are from bottom
+                   ((elementTopOffset + elementHeight) > (scrolledFromTop - configuration.threshold)); 
+        }
+
+        /**
+         * _getScrolledFromTop()
+         *
+         * allocate actual scroll distance from document top
+         * by different ways for cross-compatibility
+         *
+         * @return number
+         */
+        function _getScrolledFromTop()
+        {
+            if( document.documentElement.scrollTop )
+                return document.documentElement.scrollTop;
+
+            return document.body.scrollTop
         }
 
         /**
          * _getActualHeight()
          *
-         * try to allocate current viewport height of the browser
+         * try to allocate current viewed height of the browser
          * uses fallback option when no height is found
          *
          * @return number
