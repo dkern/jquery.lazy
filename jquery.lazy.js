@@ -1,11 +1,11 @@
 /*!
- * jQuery Lazy - v0.2.1
+ * jQuery Lazy - v0.2.2
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
  * Copyright 2014, Daniel 'Eisbehr' Kern
  *
- * Dual licensed under the MIT and GPL v2 licenses:
+ * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl-2.0.html
  *

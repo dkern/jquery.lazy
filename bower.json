@@ -1,14 +1,49 @@
 {
-	"name": "jquery-lazy",
-	"version": "0.2.1",
-	"main": "jquery.lazy.min.js",
-	"ignore":
-	[
-		"*.md",
-		"*.json"
-	],
-	"dependencies":
-	{
-		"jquery": ">=1.3.0"
-	}
+    "name": "jquery-lazy",
+    "description": "The fast and lightweight Lazy plugin for jQuery loads specified images and backgrounds in view after the page itself and speed up your loading time through this. Images outside of the visible area will only be loaded when the user scrolls to them, in both vertical directions, from top-to-bottom or bottom-to-top. This will not only increase the page loading speed, it will even decrease your traffic.",
+    "version": "0.2.2",
+    "main": "jquery.lazy.min.js",
+    "license":
+    [
+        "MIT",
+        "GPL-2.0"
+    ],
+    "ignore":
+    [
+        "*.md",
+        "*.json"
+    ],
+    "keywords":
+    [
+        "lazy",
+        "lazyload",
+        "load",
+        "loader",
+        "image",
+        "images",
+        "background",
+        "speed",
+        "delay",
+        "delayed",
+        "pageload",
+        "performance"
+    ],
+    "authors":
+    [
+        {
+            "name": "Daniel 'Eisbehr' Kern",
+            "email": "jquery@eisbehr.de",
+            "homepage": "http://www.eisbehr.de/"
+        }
+    ],
+    "homepage": "http://jquery.eisbehr.de/lazy/",
+    "repository":
+    {
+        "type": "git",
+        "url": "git://github.com/eisbehr-/jquery.lazy.git"
+    },
+    "dependencies":
+    {
+        "jquery": ">=1.3.0"
+    }
 }
