@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.2.2
+ * jQuery Lazy - v0.3.0.rc1
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -16,17 +16,20 @@
 {
     $.fn.lazy = function(settings)
     {
+        "use strict";
+
         /**
          * settings and configuration data
+         * @access private
          * @type {}
          */
-        var configuration =
+        var _configuration =
         {
             // general
             bind            : "load",
             threshold       : 500,
             fallbackHeight  : 2000,
-            visibleOnly     : true,
+            visibleOnly     : false,
             appendScroll    : window,
 
             // delay
@@ -36,6 +39,7 @@
             // attribute
             attribute       : "data-src",
             removeAttribute : true,
+            handledName     : "handled",
 
             // effect
             effect          : "show",
@@ -51,226 +55,262 @@
             afterLoad       : null,
             onError         : null,
             onFinishedAll   : null
-        };
-
-        // overwrite configuration with custom user settings
-        if( settings ) $.extend(configuration, settings);
-
-        // all given items by jQuery selector
-        var items = this;
-
-        // a helper to trigger the onFinishedAll after all other events
-        var awaitingAfterLoad = 0;
-
-        // on first page load get initial images
-        if( configuration.bind == "load" ) $(window).load(_init);
-
-        // if event driven don't wait for page loading
-        else if( configuration.bind == "event" ) _init();
-
-        // bind error callback to images if wanted
-        if( configuration.onError ) items.bind("error", function() { _triggerCallback(configuration.onError, $(this)); });
+        },
 
         /**
-         * lazyLoadImages(allImages)
-         *
-         * the 'lazy magic'
-         * check and load all needed images
-         *
-         * @param allImages boolean
-         * @return void
+         * all given items by jQuery selector
+         * @access private
+         * @type {}
          */
-        function lazyLoadImages(allImages)
-        {
-            if( typeof allImages != "boolean" ) allImages = false;
-
-            items.each(function()
-            {
-                var element = $(this);
-                var tag = this.tagName.toLowerCase();
-
-                if( _isInLoadableArea(element) || allImages )
-                {
-                    // the lazy magic
-                    if( // image source attribute is available
-                        element.attr(configuration.attribute) &&
-                        // and is image tag where attribute is not equal source 
-                        ((tag == "img" && element.attr(configuration.attribute) != element.attr("src")) ||
-                        // or is non image tag where attribute is not equal background
-                        ((tag != "img" && element.attr(configuration.attribute) != element.css("background-image"))) ) &&
-                        // and is not actually loaded just before
-                        !element.data("loaded") &&
-                        // and is visible or visibility doesn't matter
-                        (element.is(":visible") || !configuration.visibleOnly) )
-                    {
-                        // create image object						
-                        var imageObj = $(new Image());
-
-                        // increment count of items waiting for after load
-                        ++awaitingAfterLoad;
-
-                        // bind error event if wanted, otherwise only reduce waiting count
-                        if(configuration.onError) imageObj.error(function() { _triggerCallback(configuration.onError, element); _reduceAwaiting(); });
-                        else imageObj.error(function() { _reduceAwaiting(); });
-
-                        // bind after load callback to image
-                        var onLoad = true;
-                        imageObj.one("load", function()
-                        {
-                            var callable = function()
-                            {
-                                if( onLoad )
-                                {
-                                    window.setTimeout(callable, 100);
-                                    return;
-                                }
-
-                                // remove element from view
-                                element.hide();
-
-                                // set image back to element
-                                if( tag == "img" ) element.attr("src", imageObj.attr("src"));
-                                else element.css("background-image", "url(" + imageObj.attr("src") + ")");
-
-                                // bring it back with some effect!
-                                element[configuration.effect](configuration.effectTime);
-
-                                // remove attribute from element
-                                if( configuration.removeAttribute ) element.removeAttr(configuration.attribute);
-
-                                // call after load event
-                                _triggerCallback(configuration.afterLoad, element);
-
-                                // unbind event and remove image object
-                                imageObj.unbind("load");
-                                imageObj.remove();
-
-                                // remove item from waiting cue and possible trigger finished event
-                                _reduceAwaiting();
-                            };
-
-                            callable();
-                        });
-
-                        // trigger function before loading image
-                        _triggerCallback(configuration.beforeLoad, element);
-
-                        // set source
-                        imageObj.attr("src", element.attr(configuration.attribute));
-
-                        // trigger function before loading image
-                        _triggerCallback(configuration.onLoad, element);
-                        onLoad = false;
-
-                        // call after load even on cached image
-                        if( imageObj.complete ) imageObj.load();
-
-                        // mark element always as loaded
-                        element.data("loaded", true);
-                    }
-                }
-            });
-
-            // cleanup all items which are already loaded
-            items = $(items).filter(function()
-            {
-                return !$(this).data("loaded");
-            });
-        }
+        _items = this,
 
         /**
-         * _init()
-         *
-         * initialize lazy plugin
-         * bind loading to events or set delay time to load all images at once
-         *
+         * a helper to trigger the onFinishedAll after all other events
+         * @access private
+         * @type {number}
+         */
+        _awaitingAfterLoad = 0,
+
+        /**
+         * visible content height
+         * @access private
+         * @type {number}
+         */
+        _actualHeight = -1,
+
+        /**
+         * queue timer instance
+         * @access private
+         * @type {null|resource}
+         */
+        _queueTimer = null,
+
+        /**
+         * array of items in queue
+         * @access private
+         * @type {array}
+         */
+        _queueItems = [],
+
+        /**
+         * identifies if queue actually contains the lazy magic 
+         * @access private
+         * @type {boolean}
+         */
+        _queueContainsMagic = false;
+
+        /**
+         * initialize plugin - bind loading to events or set delay time to load all images at once
+         * @access private
          * @return void
          */
         function _init()
         {
             // if delay time is set load all images at once after delay time
-            if( configuration.delay >= 0 ) setTimeout(function() { lazyLoadImages(true); }, configuration.delay);
+            if( _configuration.delay >= 0 ) setTimeout(function() { _lazyLoadImages(true); }, _configuration.delay);
 
             // if no delay is set or combine usage is active bind events
-            if( configuration.delay < 0 || configuration.combined )
+            if( _configuration.delay < 0 || _configuration.combined )
             {
                 // load initial images
-                lazyLoadImages(false);
+                _lazyLoadImages(false);
 
-                // bind lazy load functions to scroll and resize event
-                $(configuration.appendScroll).bind("scroll", _throttle(configuration.throttle, lazyLoadImages));
-                $(configuration.appendScroll).bind("resize", _throttle(configuration.throttle, lazyLoadImages));
+                // bind lazy load functions to scroll event
+                addToQueue(function()
+                {
+                    $(_configuration.appendScroll).bind("scroll", _throttle(_configuration.throttle, function()
+                    {
+                        addToQueue(function() { _lazyLoadImages(false) }, this, true);
+                    }));
+                }, this);
+
+                // bind lazy load functions to resize event
+                addToQueue(function()
+                {
+                    $(_configuration.appendScroll).bind("resize", _throttle(_configuration.throttle, function()
+                    {
+                        _actualHeight = -1;
+                        addToQueue(function() { _lazyLoadImages(false) }, this, true);
+                    }));
+                }, this);
             }
         }
 
         /**
-         * _isInLoadableArea(element)
-         *
-         * check if the given element is inside the current viewport or threshold
-         *
-         * @param element jQuery
-         * @return boolean
+         * the 'lazy magic' - check all items
+         * @access private
+         * @param {boolean} allImages
+         * @return void
+         */
+        function _lazyLoadImages(allImages)
+        {
+            // stop if no items where left
+            if( !_items.length ) return;
+
+            // helper to see if something was changed
+            var loadedImages = false;
+
+            for( var i = 0; i < _items.length; i++ )
+            {
+                (function()
+                {
+                    var item = _items[i];
+                    var element = $(item);
+    
+                    if( _isInLoadableArea(item) || allImages )
+                    {
+                        var tag = _items[i].tagName.toLowerCase();
+    
+                        if( // image source attribute is available
+                            element.attr(_configuration.attribute) &&
+                            // and is image tag where attribute is not equal source 
+                            ((tag == "img" && element.attr(_configuration.attribute) != element.attr("src")) ||
+                            // or is non image tag where attribute is not equal background
+                            ((tag != "img" && element.attr(_configuration.attribute) != element.css("background-image"))) ) &&
+                            // and is not actually loaded just before
+                            !element.data(_configuration.handledName) &&
+                            // and is visible or visibility doesn't matter
+                            (element.is(":visible") || !_configuration.visibleOnly) )
+                        {
+                            loadedImages = true;
+
+                            // mark element always as handled as this point to prevent double loading
+                            element.data(_configuration.handledName, true);
+    
+                            // add item to loading queue
+                            addToQueue(function() { _handleItem(element, tag) }, this);
+                        }
+                    }
+                })();
+            }
+
+            // when something was loaded remove them from remaining items
+            if( loadedImages ) addToQueue(function() 
+            {
+                _items = $(_items).filter(function()
+                {
+                    return !$(this).data(_configuration.handledName);
+                });
+            }, this);
+        }
+
+        /**
+         * load the given element the lazy way
+         * @param {object} element
+         * @param {string} tag
+         * @access private
+         * @return void
+         */
+        function _handleItem(element, tag)
+        {
+            // create image object
+            var imageObj = $(new Image());
+
+            // increment count of items waiting for after load
+            ++_awaitingAfterLoad;
+
+            // bind error event if wanted, otherwise only reduce waiting count
+            if( _configuration.onError ) imageObj.error(function() { _triggerCallback(_configuration.onError, element); _reduceAwaiting(); });
+            else imageObj.error(function() { _reduceAwaiting(); });
+
+            // bind after load callback to image
+            var onLoad = false;
+            imageObj.one("load", function()
+            {
+                var callable = function()
+                {
+                    if( !onLoad )
+                    {
+                        window.setTimeout(callable, 100);
+                        return;
+                    }
+
+                    // remove element from view
+                    element.hide();
+
+                    // set image back to element
+                    if( tag == "img" ) element.attr("src", imageObj.attr("src"));
+                    else element.css("background-image", "url(" + imageObj.attr("src") + ")");
+
+                    // bring it back with some effect!
+                    element[_configuration.effect](_configuration.effectTime);
+
+                    // remove attribute from element
+                    if( _configuration.removeAttribute ) element.removeAttr(_configuration.attribute);
+
+                    // call after load event
+                    _triggerCallback(_configuration.afterLoad, element);
+
+                    // unbind event and remove image object
+                    imageObj.unbind("load").remove();
+
+                    // remove item from waiting cue and possible trigger finished event
+                    _reduceAwaiting();
+                };
+
+                callable();
+            });
+
+            // trigger function before loading image
+            _triggerCallback(_configuration.beforeLoad, element);
+
+            // set source
+            imageObj.attr("src", element.attr(_configuration.attribute));
+
+            // trigger function before loading image
+            _triggerCallback(_configuration.onLoad, element);
+            onLoad = true;
+
+            // call after load even on cached image
+            if( imageObj.complete ) imageObj.load();
+        }
+
+        /**
+         * check if the given element is inside the current view or threshold
+         * @access private
+         * @param {object} element
+         * @return {boolean}
          */
         function _isInLoadableArea(element)
         {
-            var scrolledFromTop  = _getScrolledFromTop(),
-                viewedHeight     = _getActualHeight(),
-                elementTopOffset = element.offset().top,
-                elementHeight    = element.height();
+             var viewedHeight     = _getActualHeight(),
+                 elementBoundRect = element.getBoundingClientRect();
 
-                   // check if element is in loadable area from top
-            return ((scrolledFromTop + viewedHeight + configuration.threshold) > elementTopOffset) &&  
-                   // check if element is even in loadable are from bottom
-                   ((elementTopOffset + elementHeight) > (scrolledFromTop - configuration.threshold)); 
+                    // check if element is in loadable area from top
+             return ((viewedHeight + _configuration.threshold) > elementBoundRect.top) && 
+                    // check if element is even in loadable are from bottom
+                    (-_configuration.threshold < elementBoundRect.bottom);
         }
 
         /**
-         * _getScrolledFromTop()
-         *
-         * allocate actual scroll distance from document top
-         * by different ways for cross-compatibility
-         *
-         * @return number
-         */
-        function _getScrolledFromTop()
-        {
-            if( document.documentElement.scrollTop )
-                return document.documentElement.scrollTop;
-
-            return document.body.scrollTop
-        }
-
-        /**
-         * _getActualHeight()
-         *
          * try to allocate current viewed height of the browser
          * uses fallback option when no height is found
-         *
-         * @return number
+         * @access private
+         * @return {number}
          */
         function _getActualHeight()
         {
-            if( window.innerHeight ) return window.innerHeight;
-            if( document.documentElement && document.documentElement.clientHeight ) return document.documentElement.clientHeight;
-            if( document.body && document.body.clientHeight ) return document.body.clientHeight;
-            if( document.body && document.body.offsetHeight ) return document.body.offsetHeight;
+            if( _actualHeight >= 0 ) return _actualHeight;
 
-            return configuration.fallbackHeight;
+            _actualHeight = window.innerHeight ||
+                            document.documentElement.clientHeight ||
+                            document.body.clientHeight ||
+                            document.body.offsetHeight ||
+                            _configuration.fallbackHeight;
+
+            return _actualHeight;
         }
 
         /**
-         * _throttle(delay, call)
-         *
          * helper function to throttle down event triggering
-         *
-         * @param delay integer
-         * @param call function object
-         * @return function object
+         * @access private
+         * @param {number} delay
+         * @param {function} call
+         * @return {function}
          */
         function _throttle(delay, call)
         {
-            var _timeout;
-            var _exec = 0;
+            var _timeout, _exec = 0;
 
             function callable()
             {
@@ -279,12 +319,12 @@
                 function run()
                 {
                     _exec = +new Date();
-                    call.apply();
+                    call.apply(undefined);
                 }
 
                 _timeout && clearTimeout(_timeout);
 
-                if( elapsed > delay || !configuration.enableThrottle ) run();
+                if( elapsed > delay || !_configuration.enableThrottle ) run();
                 else _timeout = setTimeout(run, delay - elapsed);
             }
 
@@ -292,39 +332,110 @@
         }
 
         /**
-         * _reduceAwaiting()
-         *
-         * reduce count of awaiting elements to the afterLoad event and fire onFinishedAll if reached zero
-         *
+         * reduce count of awaiting elements to 'afterLoad' event and fire 'onFinishedAll' if reached zero
+         * @access private
          * @return void
          */
         function _reduceAwaiting()
         {
-            --awaitingAfterLoad;
+            --_awaitingAfterLoad;
 
             // if no items were left trigger finished event 
-            if( !items.size() && !awaitingAfterLoad ) _triggerCallback(configuration.onFinishedAll, null);
+            if( !_items.size() && !_awaitingAfterLoad ) _triggerCallback(_configuration.onFinishedAll, null);
         }
 
         /**
-         * _triggerCallback(callback, element)
-         *
          * single implementation to handle callbacks and pass parameter
-         *
-         * @param callback function object
-         * @param element jQuery
+         * @access private
+         * @param {function} callback
+         * @param {object} [element]
          * @return void
          */
         function _triggerCallback(callback, element)
         {
             if( callback )
             {
-                if( element !== null )
-                    callback(element);
+                if( element )
+                    addToQueue(function() { callback(element); }, this);
                 else
-                    callback();
+                    addToQueue(callback, this);
             }
         }
+
+        /**
+         * set next timer for queue execution 
+         * @access private
+         * @return void
+         */
+        function _setQueueTimer()
+        {
+            _queueTimer = setTimeout(function()
+            {
+                addToQueue();
+                if( _queueItems.length ) _setQueueTimer();
+            }, 2);
+        }
+
+        /**
+         * add new execution to queue
+         * @access private
+         * @param {object} [callable]
+         * @param {object} [context]
+         * @param {boolean} [isLazyMagic]
+         * @returns {number}
+         */
+        function addToQueue(callable, context, isLazyMagic)
+        {
+            if( callable )
+            {
+                // let the lazy magic only be once in queue
+                if( !isLazyMagic || (isLazyMagic && !_queueContainsMagic) )
+                {
+                    _queueItems.push([callable, context, isLazyMagic]);
+                    if( isLazyMagic ) _queueContainsMagic = true;
+                }
+
+                if( _queueItems.length == 1 )
+                    _setQueueTimer();
+
+                return 0;
+            }
+
+            var next = _queueItems.shift();
+
+            if( !next ) return 0;
+            if( next[2] ) _queueContainsMagic = false;
+
+            next[0].call(next[1] || window);
+
+            return 0;
+        }
+
+        // set up lazy
+        (function()
+        {
+            // overwrite configuration with custom user settings
+            if( settings ) $.extend(_configuration, settings);
+
+            // late-bind error callback to images if set
+            if( _configuration.onError ) _items.each(function()
+            {
+                var item = this;
+                addToQueue(function()
+                {
+                    $(item).bind("error", function()
+                    {
+                        _triggerCallback(_configuration.onError, $(this));
+                    });
+                }, this);
+            });
+
+            // on first page load get initial images
+            if( _configuration.bind == "load" ) $(window).load(_init);
+
+            // if event driven don't wait for page loading
+            else if( _configuration.bind == "event" ) _init();
+        })();
 
         return this;
     };
