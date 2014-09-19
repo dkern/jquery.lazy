@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.3.0.rc1
+ * jQuery Lazy - v0.3.1
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -49,7 +49,10 @@
             enableThrottle  : false,
             throttle        : 250,
 
-            // callback
+            // queue
+            enableQueueing  : true,
+
+            // callbacks
             beforeLoad      : null,
             onLoad          : null,
             afterLoad       : null,
@@ -81,14 +84,14 @@
         /**
          * queue timer instance
          * @access private
-         * @type {null|resource}
+         * @type {null|number}
          */
         _queueTimer = null,
 
         /**
          * array of items in queue
          * @access private
-         * @type {array}
+         * @type {Array}
          */
         _queueItems = [],
 
@@ -116,21 +119,21 @@
                 _lazyLoadImages(false);
 
                 // bind lazy load functions to scroll event
-                addToQueue(function()
+                _addToQueue(function()
                 {
                     $(_configuration.appendScroll).bind("scroll", _throttle(_configuration.throttle, function()
                     {
-                        addToQueue(function() { _lazyLoadImages(false) }, this, true);
+                        _addToQueue(function() { _lazyLoadImages(false) }, this, true);
                     }));
                 }, this);
 
                 // bind lazy load functions to resize event
-                addToQueue(function()
+                _addToQueue(function()
                 {
                     $(_configuration.appendScroll).bind("resize", _throttle(_configuration.throttle, function()
                     {
                         _actualHeight = -1;
-                        addToQueue(function() { _lazyLoadImages(false) }, this, true);
+                        _addToQueue(function() { _lazyLoadImages(false) }, this, true);
                     }));
                 }, this);
             }
@@ -178,14 +181,14 @@
                             element.data(_configuration.handledName, true);
     
                             // add item to loading queue
-                            addToQueue(function() { _handleItem(element, tag) }, this);
+                            _addToQueue(function() { _handleItem(element, tag) }, this);
                         }
                     }
                 })();
             }
 
             // when something was loaded remove them from remaining items
-            if( loadedImages ) addToQueue(function() 
+            if( loadedImages ) _addToQueue(function() 
             {
                 _items = $(_items).filter(function()
                 {
@@ -196,9 +199,9 @@
 
         /**
          * load the given element the lazy way
+         * @access private
          * @param {object} element
          * @param {string} tag
-         * @access private
          * @return void
          */
         function _handleItem(element, tag)
@@ -356,9 +359,9 @@
             if( callback )
             {
                 if( element )
-                    addToQueue(function() { callback(element); }, this);
+                    _addToQueue(function() { callback(element); }, this);
                 else
-                    addToQueue(callback, this);
+                    _addToQueue(callback, this);
             }
         }
 
@@ -371,7 +374,7 @@
         {
             _queueTimer = setTimeout(function()
             {
-                addToQueue();
+                _addToQueue();
                 if( _queueItems.length ) _setQueueTimer();
             }, 2);
         }
@@ -384,10 +387,13 @@
          * @param {boolean} [isLazyMagic]
          * @returns {number}
          */
-        function addToQueue(callable, context, isLazyMagic)
+        function _addToQueue(callable, context, isLazyMagic)
         {
             if( callable )
             {
+                // execute directly when queue is disabled
+                if( _configuration.enableQueueing ) callable.call(context || window);
+
                 // let the lazy magic only be once in queue
                 if( !isLazyMagic || (isLazyMagic && !_queueContainsMagic) )
                 {
@@ -395,8 +401,7 @@
                     if( isLazyMagic ) _queueContainsMagic = true;
                 }
 
-                if( _queueItems.length == 1 )
-                    _setQueueTimer();
+                if( _queueItems.length == 1 ) _setQueueTimer();
 
                 return 0;
             }
@@ -421,13 +426,13 @@
             if( _configuration.onError ) _items.each(function()
             {
                 var item = this;
-                addToQueue(function()
+                _addToQueue(function()
                 {
                     $(item).bind("error", function()
                     {
                         _triggerCallback(_configuration.onError, $(this));
                     });
-                }, this);
+                }, item);
             });
 
             // on first page load get initial images
