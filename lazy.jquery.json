@@ -1,7 +1,7 @@
 {
 	"name": "lazy",
     "title": "jQuery Lazy - Delayed Image and Background Loader",
-	"version": "0.2.2",
+	"version": "0.3.1",
 	"author":
 	{
 		"name": "Daniel 'Eisbehr' Kern",
