@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.3.1
+ * jQuery Lazy - v0.3.2
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -21,16 +21,18 @@
         /**
          * settings and configuration data
          * @access private
-         * @type {}
+         * @type {*}
          */
         var _configuration =
         {
             // general
             bind            : "load",
             threshold       : 500,
+            fallbackWidth   : 2000,
             fallbackHeight  : 2000,
             visibleOnly     : false,
             appendScroll    : window,
+            scrollDirection : "both",
 
             // delay
             delay           : -1,
@@ -63,7 +65,7 @@
         /**
          * all given items by jQuery selector
          * @access private
-         * @type {}
+         * @type {*}
          */
         _items = this,
 
@@ -73,6 +75,13 @@
          * @type {number}
          */
         _awaitingAfterLoad = 0,
+
+        /**
+         * visible content width
+         * @access private
+         * @type {number}
+         */
+        _actualWidth = -1,
 
         /**
          * visible content height
@@ -96,7 +105,7 @@
         _queueItems = [],
 
         /**
-         * identifies if queue actually contains the lazy magic 
+         * identifies if queue actually contains the lazy magic
          * @access private
          * @type {boolean}
          */
@@ -132,7 +141,7 @@
                 {
                     $(_configuration.appendScroll).bind("resize", _throttle(_configuration.throttle, function()
                     {
-                        _actualHeight = -1;
+                        _actualWidth = _actualHeight = -1;
                         _addToQueue(function() { _lazyLoadImages(false) }, this, true);
                     }));
                 }, this);
@@ -157,13 +166,12 @@
             {
                 (function()
                 {
-                    var item = _items[i];
-                    var element = $(item);
-    
+                    var item = _items[i], element = $(item);
+
                     if( _isInLoadableArea(item) || allImages )
                     {
                         var tag = _items[i].tagName.toLowerCase();
-    
+
                         if( // image source attribute is available
                             element.attr(_configuration.attribute) &&
                             // and is image tag where attribute is not equal source 
@@ -179,7 +187,7 @@
 
                             // mark element always as handled as this point to prevent double loading
                             element.data(_configuration.handledName, true);
-    
+
                             // add item to loading queue
                             _addToQueue(function() { _handleItem(element, tag) }, this);
                         }
@@ -188,7 +196,7 @@
             }
 
             // when something was loaded remove them from remaining items
-            if( loadedImages ) _addToQueue(function() 
+            if( loadedImages ) _addToQueue(function()
             {
                 _items = $(_items).filter(function()
                 {
@@ -276,13 +284,41 @@
          */
         function _isInLoadableArea(element)
         {
-             var viewedHeight     = _getActualHeight(),
-                 elementBoundRect = element.getBoundingClientRect();
+            var viewedWidth  = _getActualWidth(),
+                viewedHeight = _getActualHeight(),
+                elementBound = element.getBoundingClientRect(),
+                vertical     = // check if element is in loadable area from top
+                               ((viewedHeight + _configuration.threshold) > elementBound.top) &&
+                               // check if element is even in loadable are from bottom
+                               (-_configuration.threshold < elementBound.bottom),
+                horizontal   = // check if element is in loadable area from left
+                               ((viewedWidth + _configuration.threshold) > elementBound.left) &&
+                               // check if element is even in loadable are from right
+                               (-_configuration.threshold < elementBound.right);
 
-                    // check if element is in loadable area from top
-             return ((viewedHeight + _configuration.threshold) > elementBoundRect.top) && 
-                    // check if element is even in loadable are from bottom
-                    (-_configuration.threshold < elementBoundRect.bottom);
+            if( _configuration.scrollDirection == "vertical" ) return vertical;
+            else if( _configuration.scrollDirection == "horizontal" ) return horizontal;
+
+            return vertical && horizontal;
+        }
+
+        /**
+         * try to allocate current viewed width of the browser
+         * uses fallback option when no height is found
+         * @access private
+         * @return {number}
+         */
+        function _getActualWidth()
+        {
+            if( _actualWidth >= 0 ) return _actualWidth;
+
+            _actualWidth = window.innerWidth ||
+                           document.documentElement.clientWidth ||
+                           document.body.clientWidth ||
+                           document.body.offsetWidth ||
+                           _configuration.fallbackWidth;
+
+            return _actualWidth;
         }
 
         /**
@@ -366,7 +402,7 @@
         }
 
         /**
-         * set next timer for queue execution 
+         * set next timer for queue execution
          * @access private
          * @return void
          */
