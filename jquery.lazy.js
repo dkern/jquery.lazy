@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.3.2
+ * jQuery Lazy - v0.3.3
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
