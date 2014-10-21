@@ -1,4 +1,6 @@
 ### jQuery Lazy - Delayed Image and Background Loader
+[![GitHub version](https://badge.fury.io/gh/eisbehr-%2Fjquery.lazy.svg)](http://github.com/eisbehr-/jquery.lazy)
+[![Dependency version](https://david-dm.org/eisbehr-/jquery.lazy.png)](https://david-dm.org/eisbehr-/jquery.lazy)
 
 ---
 
@@ -26,7 +28,12 @@ Download and save one of two available files to include Lazy to your page, eithe
 ```
 
 #### Package Managers
-Lazy is even available through [NPM](http://npmjs.org) and [Bower](http://bower.io). Just use one of the following commands:
+Lazy is even available through [NPM](http://npmjs.org) and [Bower](http://bower.io). Just use one of the following commands below.
+
+[![NPM version](https://badge.fury.io/js/jquery-lazy.svg)](http://www.npmjs.org/package/jquery-lazy)
+[![Bower version](https://badge.fury.io/bo/jquery-lazy.svg)](http://bower.io/search/?q=jquery-lazy)
+
+[![NPM](https://nodei.co/npm/jquery-lazy.png?compact=true)](https://nodei.co/npm/jquery-lazy/)
 ```
 $ npm install jquery-lazy
 $ bower install jquery-lazy
