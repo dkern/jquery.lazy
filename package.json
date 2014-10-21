@@ -1,7 +1,7 @@
 {
     "name": "jquery-lazy",
     "title": "jQuery Lazy - Delayed Image and Background Loader",
-    "version": "0.3.4",
+    "version": "0.3.5",
     "description": "The fast and lightweight Lazy plugin for jQuery loads specified images and backgrounds in view after the page itself and speed up your loading time through this. Images outside of the visible area will only be loaded when the user scrolls to them in any direction. This will not only increase the page loading speed, it will even decrease your traffic.",
     "homepage": "http://jquery.eisbehr.de/lazy/",
     "author":
@@ -13,7 +13,7 @@
     "repository":
     {
         "type": "git",
-        "url": "git@github.com:eisbehr/jquery.lazy.git"
+        "url": "git@github.com:eisbehr-/jquery.lazy.git"
     },
     "bugs": "http://github.com/eisbehr-/jquery.lazy/issues",
     "keywords":
