@@ -13,7 +13,7 @@
     "repository":
     {
         "type": "git",
-        "url": "git@github.com:eisbehr/jquery.lazy.git"
+        "url": "git@github.com:eisbehr-/jquery.lazy.git"
     },
     "bugs": "http://github.com/eisbehr-/jquery.lazy/issues",
     "keywords":
