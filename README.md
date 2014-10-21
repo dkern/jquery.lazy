@@ -25,8 +25,12 @@ Download and save one of two available files to include Lazy to your page, eithe
 <script type="text/javascript" src="jquery.lazy.min.js"></script>
 ```
 
-#### Bower Package Manager
-Lazy is even available through [Bower](http://bower.io). Just use `$ bower install jquery-lazy`.
+#### Package Managers
+Lazy is even available through [NPM](http://npmjs.org) and [Bower](http://bower.io). Just use one of the following commands:
+```
+$ npm install jquery-lazy
+$ bower install jquery-lazy
+```
 
 
 ## Basic Usage
