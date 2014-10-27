@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.3.6
+ * jQuery Lazy - v0.3.7
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -421,14 +421,18 @@
          * @param {object} [callable]
          * @param {object} [context]
          * @param {boolean} [isLazyMagic]
-         * @returns {number}
+         * @returns void
          */
         function _addToQueue(callable, context, isLazyMagic)
         {
             if( callable )
             {
-                // execute directly when queue is disabled
-                if( _configuration.enableQueueing ) callable.call(context || window);
+                // execute directly when queue is disabled and stop queuing
+                if( !_configuration.enableQueueing )
+                {
+                    callable.call(context || window);
+                    return;
+                }
 
                 // let the lazy magic only be once in queue
                 if( !isLazyMagic || (isLazyMagic && !_queueContainsMagic) )
@@ -439,17 +443,15 @@
 
                 if( _queueItems.length == 1 ) _setQueueTimer();
 
-                return 0;
+                return;
             }
 
             var next = _queueItems.shift();
 
-            if( !next ) return 0;
+            if( !next ) return;
             if( next[2] ) _queueContainsMagic = false;
 
             next[0].call(next[1] || window);
-
-            return 0;
         }
 
         // set up lazy
