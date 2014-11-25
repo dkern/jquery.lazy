@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.3.7
+ * jQuery Lazy - v0.3.8
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -33,13 +33,16 @@
             visibleOnly     : false,
             appendScroll    : window,
             scrollDirection : "both",
+            defaultImage    : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
+            placeholder     : null,
 
             // delay
             delay           : -1,
             combined        : false,
 
-            // attribute
+            // attributes
             attribute       : "data-src",
+            retinaAttribute : "data-retina",
             removeAttribute : true,
             handledName     : "handled",
 
@@ -91,6 +94,13 @@
         _actualHeight = -1,
 
         /**
+         * detected device pixel ration
+         * @access private
+         * @type {boolean}
+         */
+        _isRetinaDisplay = false,
+
+        /**
          * queue timer instance
          * @access private
          * @type {null|number}
@@ -118,6 +128,25 @@
          */
         function _init()
         {
+            // detect actual device pixel ratio
+            // noinspection JSUnresolvedVariable
+            _isRetinaDisplay = window.devicePixelRatio > 1;
+
+            // set default image and placeholder to all images if nothing other is set
+            if( _configuration.defaultImage !== null || _configuration.placeholder !== null )
+                for( var i = 0; i < _items.length; i++ )
+                {
+                    var element = $(_items[i]);
+
+                    // default image
+                    if( _configuration.defaultImage !== null && !element.attr("src") )
+                        element.attr("src", _configuration.defaultImage);
+
+                    // placeholder
+                    if( _configuration.placeholder !== null && (!element.css("background-image") || element.css("background-image") == "none") )
+                        element.css("background-image", "url(" + _configuration.placeholder + ")");
+                }
+
             // if delay time is set load all images at once after delay time
             if( _configuration.delay >= 0 ) setTimeout(function() { _lazyLoadImages(true); }, _configuration.delay);
 
@@ -170,7 +199,7 @@
 
                     if( _isInLoadableArea(item) || allImages )
                     {
-                        var tag = _items[i].tagName.toLowerCase();
+                        var tag = item.tagName.toLowerCase();
 
                         if( // image source attribute is available
                             element.attr(_configuration.attribute) &&
@@ -247,7 +276,11 @@
                     element[_configuration.effect](_configuration.effectTime);
 
                     // remove attribute from element
-                    if( _configuration.removeAttribute ) element.removeAttr(_configuration.attribute);
+                    if( _configuration.removeAttribute )
+                    {
+                        element.removeAttr(_configuration.attribute);
+                        element.removeAttr(_configuration.retinaAttribute);
+                    }
 
                     // call after load event
                     _triggerCallback(_configuration.afterLoad, element);
@@ -266,7 +299,8 @@
             _triggerCallback(_configuration.beforeLoad, element);
 
             // set source
-            imageObj.attr("src", element.attr(_configuration.attribute));
+            imageObj.attr("src", _isRetinaDisplay && element.attr(_configuration.retinaAttribute) ?
+                                 element.attr(_configuration.retinaAttribute) : element.attr(_configuration.attribute));
 
             // trigger function before loading image
             _triggerCallback(_configuration.onLoad, element);
