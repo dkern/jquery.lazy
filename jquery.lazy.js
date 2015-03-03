@@ -1,7 +1,7 @@
 /*!
  * jQuery Lazy - v0.3.8
  * http://jquery.eisbehr.de/lazy/
- * http://eisbehr.de
+ * http://eisbehr.de/
  *
  * Copyright 2014, Daniel 'Eisbehr' Kern
  *
@@ -35,6 +35,7 @@
             scrollDirection : "both",
             defaultImage    : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
             placeholder     : null,
+            mobileWidth     : 500,
 
             // delay
             delay           : -1,
@@ -43,6 +44,7 @@
             // attributes
             attribute       : "data-src",
             retinaAttribute : "data-retina",
+            mobileAttribute : "data-mobile",
             removeAttribute : true,
             handledName     : "handled",
 
@@ -101,6 +103,13 @@
         _isRetinaDisplay = false,
 
         /**
+         * detected device screen width
+         * @access private
+         * @type {boolean}
+         */
+        _isMobileDevice = false,
+
+        /**
          * queue timer instance
          * @access private
          * @type {null|number}
@@ -122,6 +131,25 @@
         _queueContainsMagic = false;
 
         /**
+         * try to allocate current viewed width of the browser
+         * uses fallback option when no height is found
+         * @access private
+         * @return {number}
+         */
+        function _getActualWidth()
+        {
+            if( _actualWidth >= 0 ) return _actualWidth;
+
+            _actualWidth = window.innerWidth ||
+                           document.documentElement.clientWidth ||
+                           document.body.clientWidth ||
+                           document.body.offsetWidth ||
+                           _configuration.fallbackWidth;
+
+            return _actualWidth;
+        }
+        
+        /**
          * initialize plugin - bind loading to events or set delay time to load all images at once
          * @access private
          * @return void
@@ -131,6 +159,10 @@
             // detect actual device pixel ratio
             // noinspection JSUnresolvedVariable
             _isRetinaDisplay = window.devicePixelRatio > 1;
+
+            // detect if document width is smaller than mobile width treshold
+            // consider device as mobile device
+            _isMobileDevice = _getActualWidth() <= _configuration.mobileWidth;
 
             // set default image and placeholder to all images if nothing other is set
             if( _configuration.defaultImage !== null || _configuration.placeholder !== null )
@@ -280,6 +312,7 @@
                     {
                         element.removeAttr(_configuration.attribute);
                         element.removeAttr(_configuration.retinaAttribute);
+                        element.removeAttr(_configuration.mobileAttribute);
                     }
 
                     // call after load event
@@ -299,8 +332,22 @@
             _triggerCallback(_configuration.beforeLoad, element);
 
             // set source
-            imageObj.attr("src", _isRetinaDisplay && element.attr(_configuration.retinaAttribute) ?
-                                 element.attr(_configuration.retinaAttribute) : element.attr(_configuration.attribute));
+            // display is considered to be a retina display and the retina source is set
+            if (_isRetinaDisplay && element.attr(_configuration.retinaAttribute))
+            {
+                var source = element.attr(_configuration.retinaAttribute);
+            } 
+            // device is considered a mobile device and mobile source is set
+            else if (_isMobileDevice && element.attr(_configuration.mobileAttribute))
+            {
+                var source = element.attr(_configuration.mobileAttribute);
+            }
+            // "regular" display - use data-src to set the image source
+            else
+            {
+                var source = element.attr(_configuration.attribute);
+            }                                  
+            imageObj.attr("src", source);
 
             // trigger function before loading image
             _triggerCallback(_configuration.onLoad, element);
@@ -334,25 +381,6 @@
             else if( _configuration.scrollDirection == "horizontal" ) return horizontal;
 
             return vertical && horizontal;
-        }
-
-        /**
-         * try to allocate current viewed width of the browser
-         * uses fallback option when no height is found
-         * @access private
-         * @return {number}
-         */
-        function _getActualWidth()
-        {
-            if( _actualWidth >= 0 ) return _actualWidth;
-
-            _actualWidth = window.innerWidth ||
-                           document.documentElement.clientWidth ||
-                           document.body.clientWidth ||
-                           document.body.offsetWidth ||
-                           _configuration.fallbackWidth;
-
-            return _actualWidth;
         }
 
         /**
