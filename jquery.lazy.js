@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.3.8
+ * jQuery Lazy - v0.4.0
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -14,63 +14,99 @@
 
 (function($, window, document, undefined)
 {
-    $.fn.lazy = function(settings)
+    "use strict";
+
+    // make lazy a bit more case-insensitive :)
+    $.fn.Lazy = $.fn.lazy = function(settings)
     {
-        "use strict";
+        return new LazyPlugin(this, settings);
+    };
 
+    /**
+     * lazy plugin class constructor
+     * @constructor
+     * @access private
+     * @param {*} elements
+     * @param {*} settings
+     * @returns {{}|LazyPlugin}
+     */
+    function LazyPlugin(elements, settings)
+    {
+        this.items = elements;
+        this.lazy(settings);
+
+        return this.configuration.chainable ? elements : this;
+    }
+
+    /**
+     * settings and configuration data
+     * @access private
+     * @type {*}
+     */
+    LazyPlugin.prototype.configuration =
+    {
+        // general
+        chainable       : true,
+        bind            : "load",
+        threshold       : 500,
+        fallbackWidth   : 2000,
+        fallbackHeight  : 2000,
+        visibleOnly     : false,
+        appendScroll    : window,
+        scrollDirection : "both",
+        defaultImage    : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
+        placeholder     : null,
+
+        // delay
+        delay           : -1,
+        combined        : false,
+
+        // attributes
+        attribute       : "data-src",
+        retinaAttribute : "data-retina",
+        removeAttribute : true,
+        handledName     : "handled",
+
+        // effect
+        effect          : "show",
+        effectTime      : 0,
+
+        // throttle
+        enableThrottle  : false,
+        throttle        : 250,
+
+        // queue
+        enableQueueing  : true,
+
+        // callbacks
+        beforeLoad      : null,
+        onLoad          : null,
+        afterLoad       : null,
+        onError         : null,
+        onFinishedAll   : null
+    };
+
+    /**
+     * all given items by jQuery selector
+     * @access private
+     * @type {*}
+     */
+    LazyPlugin.prototype.items = {};
+
+    /**
+     * contains all logic and the whole element handling
+     * @access private
+     * @type {function}
+     * @param {*} settings
+     * @returns void
+     */
+    LazyPlugin.prototype.lazy = function(settings)
+    {
         /**
-         * settings and configuration data
-         * @access private
-         * @type {*}
+         * this lazy instance
+         * @type {LazyPlugin}
          */
-        var _configuration =
-        {
-            // general
-            bind            : "load",
-            threshold       : 500,
-            fallbackWidth   : 2000,
-            fallbackHeight  : 2000,
-            visibleOnly     : false,
-            appendScroll    : window,
-            scrollDirection : "both",
-            defaultImage    : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
-            placeholder     : null,
-
-            // delay
-            delay           : -1,
-            combined        : false,
-
-            // attributes
-            attribute       : "data-src",
-            retinaAttribute : "data-retina",
-            removeAttribute : true,
-            handledName     : "handled",
-
-            // effect
-            effect          : "show",
-            effectTime      : 0,
-
-            // throttle
-            enableThrottle  : false,
-            throttle        : 250,
-
-            // queue
-            enableQueueing  : true,
-
-            // callbacks
-            beforeLoad      : null,
-            onLoad          : null,
-            afterLoad       : null,
-            onError         : null,
-            onFinishedAll   : null
-        },
-
-        /**
-         * all given items by jQuery selector
-         * @access private
-         * @type {*}
-         */
-        _items = this,
+        var lazy = this,
 
         /**
          * a helper to trigger the onFinishedAll after all other events
@@ -133,46 +169,48 @@
             _isRetinaDisplay = window.devicePixelRatio > 1;
 
             // set default image and placeholder to all images if nothing other is set
-            if( _configuration.defaultImage !== null || _configuration.placeholder !== null )
-                for( var i = 0; i < _items.length; i++ )
+            if( lazy.configuration.defaultImage !== null || lazy.configuration.placeholder !== null )
+                for( var i = 0; i < lazy.items.length; i++ )
                 {
-                    var element = $(_items[i]);
+                    var element = $(lazy.items[i]);
+
+                    // append instance to all elements
+                    element.data("lazy", lazy);
 
                     // default image
-                    if( _configuration.defaultImage !== null && !element.attr("src") )
-                        element.attr("src", _configuration.defaultImage);
+                    if( lazy.configuration.defaultImage !== null && !element.attr("src") )
+                        element.attr("src", lazy.configuration.defaultImage);
 
                     // placeholder
-                    if( _configuration.placeholder !== null && (!element.css("background-image") || element.css("background-image") == "none") )
-                        element.css("background-image", "url(" + _configuration.placeholder + ")");
+                    if( lazy.configuration.placeholder !== null && (!element.css("background-image") || element.css("background-image") == "none") )
+                        element.css("background-image", "url(" + lazy.configuration.placeholder + ")");
                 }
 
             // if delay time is set load all images at once after delay time
-            if( _configuration.delay >= 0 ) setTimeout(function() { _lazyLoadImages(true); }, _configuration.delay);
+            if( lazy.configuration.delay >= 0 ) setTimeout(function() { _lazyLoadImages(true); }, lazy.configuration.delay);
 
             // if no delay is set or combine usage is active bind events
-            if( _configuration.delay < 0 || _configuration.combined )
+            if( lazy.configuration.delay < 0 || lazy.configuration.combined )
             {
                 // load initial images
                 _lazyLoadImages(false);
 
+                // create unique event function
+                lazy.event = _throttle(lazy.configuration.throttle, function()
+                {
+                    _addToQueue(function() { _lazyLoadImages(false) }, this, true);
+                });
+
                 // bind lazy load functions to scroll event
                 _addToQueue(function()
                 {
-                    $(_configuration.appendScroll).bind("scroll", _throttle(_configuration.throttle, function()
-                    {
-                        _addToQueue(function() { _lazyLoadImages(false) }, this, true);
-                    }));
+                    $(lazy.configuration.appendScroll).bind("scroll", lazy.event);
                 }, this);
 
                 // bind lazy load functions to resize event
                 _addToQueue(function()
                 {
-                    $(_configuration.appendScroll).bind("resize", _throttle(_configuration.throttle, function()
-                    {
-                        _actualWidth = _actualHeight = -1;
-                        _addToQueue(function() { _lazyLoadImages(false) }, this, true);
-                    }));
+                    $(lazy.configuration.appendScroll).bind("resize", lazy.event);
                 }, this);
             }
         }
@@ -185,51 +223,53 @@
          */
         function _lazyLoadImages(allImages)
         {
-            // stop if no items where left
-            if( !_items.length ) return;
+            // stop and unbind if no items where left
+            if( !lazy.items.length ) return;
 
             // helper to see if something was changed
             var loadedImages = false;
 
-            for( var i = 0; i < _items.length; i++ )
+            for( var i = 0; i < lazy.items.length; i++ )
             {
-                (function()
+                (function(items)
                 {
-                    var item = _items[i], element = $(item);
+                    var item = items[i], element = $(item);
 
                     if( _isInLoadableArea(item) || allImages )
                     {
                         var tag = item.tagName.toLowerCase();
 
+                        // and is not actually loaded just before
+                        if( element.data(lazy.configuration.handledName) )
+                            return;
+
+                        loadedImages = true;
+
+                        // mark element always as handled as this point to prevent double loading
+                        element.data(lazy.configuration.handledName, true);
+
                         if( // image source attribute is available
-                            element.attr(_configuration.attribute) &&
+                            element.attr(lazy.configuration.attribute) &&
                             // and is image tag where attribute is not equal source 
-                            ((tag == "img" && element.attr(_configuration.attribute) != element.attr("src")) ||
+                            ((tag == "img" && element.attr(lazy.configuration.attribute) != element.attr("src")) ||
                             // or is non image tag where attribute is not equal background
-                            ((tag != "img" && element.attr(_configuration.attribute) != element.css("background-image"))) ) &&
-                            // and is not actually loaded just before
-                            !element.data(_configuration.handledName) &&
+                            ((tag != "img" && element.attr(lazy.configuration.attribute) != element.css("background-image"))) ) &&
                             // and is visible or visibility doesn't matter
-                            (element.is(":visible") || !_configuration.visibleOnly) )
+                            (element.is(":visible") || !lazy.configuration.visibleOnly) )
                         {
-                            loadedImages = true;
-
-                            // mark element always as handled as this point to prevent double loading
-                            element.data(_configuration.handledName, true);
-
                             // add item to loading queue
                             _addToQueue(function() { _handleItem(element, tag) }, this);
                         }
                     }
-                })();
+                })(lazy.items);
             }
 
             // when something was loaded remove them from remaining items
             if( loadedImages ) _addToQueue(function()
             {
-                _items = $(_items).filter(function()
+                lazy.items = $(lazy.items).filter(function()
                 {
-                    return !$(this).data(_configuration.handledName);
+                    return !$(this).data(lazy.configuration.handledName);
                 });
             }, this);
         }
@@ -250,7 +290,7 @@
             ++_awaitingAfterLoad;
 
             // bind error event if wanted, otherwise only reduce waiting count
-            if( _configuration.onError ) imageObj.error(function() { _triggerCallback(_configuration.onError, element); _reduceAwaiting(); });
+            if( lazy.configuration.onError ) imageObj.error(function() { _triggerCallback(lazy.configuration.onError, element); _reduceAwaiting(); });
             else imageObj.error(function() { _reduceAwaiting(); });
 
             // bind after load callback to image
@@ -273,17 +313,17 @@
                     else element.css("background-image", "url(" + imageObj.attr("src") + ")");
 
                     // bring it back with some effect!
-                    element[_configuration.effect](_configuration.effectTime);
+                    element[lazy.configuration.effect](lazy.configuration.effectTime);
 
                     // remove attribute from element
-                    if( _configuration.removeAttribute )
+                    if( lazy.configuration.removeAttribute )
                     {
-                        element.removeAttr(_configuration.attribute);
-                        element.removeAttr(_configuration.retinaAttribute);
+                        element.removeAttr(lazy.configuration.attribute);
+                        element.removeAttr(lazy.configuration.retinaAttribute);
                     }
 
                     // call after load event
-                    _triggerCallback(_configuration.afterLoad, element);
+                    _triggerCallback(lazy.configuration.afterLoad, element);
 
                     // unbind event and remove image object
                     imageObj.unbind("load").remove();
@@ -296,14 +336,14 @@
             });
 
             // trigger function before loading image
-            _triggerCallback(_configuration.beforeLoad, element);
+            _triggerCallback(lazy.configuration.beforeLoad, element);
 
             // set source
-            imageObj.attr("src", _isRetinaDisplay && element.attr(_configuration.retinaAttribute) ?
-                                 element.attr(_configuration.retinaAttribute) : element.attr(_configuration.attribute));
+            imageObj.attr("src", _isRetinaDisplay && element.attr(lazy.configuration.retinaAttribute) ?
+                                 element.attr(lazy.configuration.retinaAttribute) : element.attr(lazy.configuration.attribute));
 
             // trigger function before loading image
-            _triggerCallback(_configuration.onLoad, element);
+            _triggerCallback(lazy.configuration.onLoad, element);
             onLoad = true;
 
             // call after load even on cached image
@@ -322,16 +362,16 @@
                 viewedHeight = _getActualHeight(),
                 elementBound = element.getBoundingClientRect(),
                 vertical     = // check if element is in loadable area from top
-                               ((viewedHeight + _configuration.threshold) > elementBound.top) &&
+                               ((viewedHeight + lazy.configuration.threshold) > elementBound.top) &&
                                // check if element is even in loadable are from bottom
-                               (-_configuration.threshold < elementBound.bottom),
+                               (-lazy.configuration.threshold < elementBound.bottom),
                 horizontal   = // check if element is in loadable area from left
-                               ((viewedWidth + _configuration.threshold) > elementBound.left) &&
+                               ((viewedWidth + lazy.configuration.threshold) > elementBound.left) &&
                                // check if element is even in loadable are from right
-                               (-_configuration.threshold < elementBound.right);
+                               (-lazy.configuration.threshold < elementBound.right);
 
-            if( _configuration.scrollDirection == "vertical" ) return vertical;
-            else if( _configuration.scrollDirection == "horizontal" ) return horizontal;
+            if( lazy.configuration.scrollDirection == "vertical" ) return vertical;
+            else if( lazy.configuration.scrollDirection == "horizontal" ) return horizontal;
 
             return vertical && horizontal;
         }
@@ -350,7 +390,7 @@
                            document.documentElement.clientWidth ||
                            document.body.clientWidth ||
                            document.body.offsetWidth ||
-                           _configuration.fallbackWidth;
+                           lazy.configuration.fallbackWidth;
 
             return _actualWidth;
         }
@@ -369,7 +409,7 @@
                             document.documentElement.clientHeight ||
                             document.body.clientHeight ||
                             document.body.offsetHeight ||
-                            _configuration.fallbackHeight;
+                            lazy.configuration.fallbackHeight;
 
             return _actualHeight;
         }
@@ -397,7 +437,7 @@
 
                 _timeout && clearTimeout(_timeout);
 
-                if( elapsed > delay || !_configuration.enableThrottle ) run();
+                if( elapsed > delay || !lazy.configuration.enableThrottle ) run();
                 else _timeout = setTimeout(run, delay - elapsed);
             }
 
@@ -414,7 +454,7 @@
             --_awaitingAfterLoad;
 
             // if no items were left trigger finished event 
-            if( !_items.size() && !_awaitingAfterLoad ) _triggerCallback(_configuration.onFinishedAll, null);
+            if( !lazy.items.size() && !_awaitingAfterLoad ) _triggerCallback(lazy.configuration.onFinishedAll, null);
         }
 
         /**
@@ -462,7 +502,7 @@
             if( callable )
             {
                 // execute directly when queue is disabled and stop queuing
-                if( !_configuration.enableQueueing )
+                if( !lazy.configuration.enableQueueing )
                 {
                     callable.call(context || window);
                     return;
@@ -492,32 +532,52 @@
         (function()
         {
             // overwrite configuration with custom user settings
-            if( settings ) $.extend(_configuration, settings);
+            if( settings ) $.extend(lazy.configuration, settings);
 
             // late-bind error callback to images if set
-            if( _configuration.onError ) _items.each(function()
+            if( lazy.configuration.onError ) lazy.items.each(function()
             {
                 var item = this;
+
                 _addToQueue(function()
                 {
                     $(item).bind("error", function()
                     {
-                        _triggerCallback(_configuration.onError, $(this));
+                        _triggerCallback(lazy.configuration.onError, $(this));
                     });
                 }, item);
             });
 
             // on first page load get initial images
-            if( _configuration.bind == "load" ) $(window).load(_init);
+            if( lazy.configuration.bind == "load" ) $(window).load(_init);
 
             // if event driven don't wait for page loading
-            else if( _configuration.bind == "event" ) _init();
+            else if( lazy.configuration.bind == "event" ) _init();
         })();
-
-        return this;
     };
 
-    // make lazy a bit more case-insensitive :)
-    $.fn.Lazy = $.fn.lazy;
+    /**
+     * instance generated event executed on scroll or resize
+     * @access public
+     * @type {function}
+     * @returns void
+     */
+    LazyPlugin.prototype.event = function() {};
 
+    /**
+     * destroy this lazy instance
+     * @access public
+     * @type {function}
+     * @returns void
+     */
+    LazyPlugin.prototype.destroy = function ()
+    {
+        // unbind instance generated event
+        $(this.configuration.appendScroll).unbind("scroll", this.event);
+        $(this.configuration.appendScroll).unbind("resize", this.event);
+
+        // clear items and event
+        this.items = {};
+        this.event = function() {};
+    };
 })(jQuery, window, document);
