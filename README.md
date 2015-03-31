@@ -65,6 +65,25 @@ Lazy comes with a bunch of [callbacks and events](http://jquery.eisbehr.de/lazy/
 * `onFinishedAll` - after all images in selector was loaded or returned an error
 
 
+## Instances and public Functions
+This plugin supports multiple parallel instances. Just initialize them with different selectors on jQuery. To access an instances public functions you can initialize them in an object oriented manner or grab the instance bind to every element by default:
+```JS
+// object oriented way
+var instance = jQuery("img.lazy").Lazy({chainable: false});
+
+// grab from elements (only works well if you use same selectors)
+jQuery("img.lazy").Lazy();
+var instance = jQuery("img.lazy").data("plugin_lazy");
+```
+
+Every instance has some public available functions to control its behavior. There are currently three available:
+```JS
+instance.update();  // loads all images in current viewport
+instance.loadAll(); // loads all remaining available images from this instance
+instance.destroy(); // unbinds all events and stop execution directly
+```
+
+
 ## Bugs / Feature request
 Please [report](http://github.com/eisbehr-/jquery.lazy/issues) bugs and feel free to [ask](http://github.com/eisbehr-/jquery.lazy/issues) for new features directly on GitHub.
 
