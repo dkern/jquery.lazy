@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.5.1
+ * jQuery Lazy - v0.5.2
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -100,18 +100,19 @@
             if( configuration("defaultImage") !== null || configuration("placeholder") !== null )
                 for( var i = 0; i < items.length; i++ )
                 {
-                    var element = $(items[i]);
+                    var element = $(items[i]),
+                        tag = items[i].tagName.toLowerCase(),
+                        propertyName = "background-image";
 
                     // append instance to all elements
                     element.data("plugin_" + instance.name, instance);
 
                     // set default image on every element without source
-                    if( configuration("defaultImage") !== null && !element.attr("src") )
+                    if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
                         element.attr("src", configuration("defaultImage"));
 
                     // set placeholder on every element without background image
-                    var propertyName = "background-image";
-                    if( configuration("placeholder") !== null && (!element.css(propertyName) || element.css(propertyName) == "none") )
+                    else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
                         element.css(propertyName, "url(" + configuration("placeholder") + ")");
                 }
 
@@ -166,11 +167,6 @@
                         // skip element if already loaded, this may happen because of queued cleanup function
                         if( element.data(configuration("handledName")) ) return;
 
-                        loadedImages = true;
-
-                        // mark element always as handled as this point to prevent double loading
-                        element.data(configuration("handledName"), true);
-
                         if( // image source attribute is available
                             element.attr(configuration("attribute")) &&
                             // and is image tag where attribute is not equal source 
@@ -180,6 +176,10 @@
                             // and is visible or visibility doesn't matter
                             (element.is(":visible") || !configuration("visibleOnly")) )
                         {
+                            // mark element always as handled as this point to prevent double loading
+                            loadedImages = true;
+                            element.data(configuration("handledName"), true);
+
                             // add item to loading queue
                             _addToQueue(function() { _handleItem(element, tag) });
                         }
