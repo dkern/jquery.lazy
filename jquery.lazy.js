@@ -1,9 +1,9 @@
 /*!
- * jQuery Lazy - v0.5.2
+ * jQuery Lazy - v0.5.3
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
- * Copyright 2015, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2015, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -219,39 +219,30 @@
             });
 
             // bind after load callback to image
-            var onLoad = false;
             imageObj.one("load", function()
             {
-                var callable = function()
-                {
-                    // check back to give onLoad event more time
-                    if( !onLoad ) return setTimeout(callable, 10);
+                // remove element from view
+                element.hide();
 
-                    // remove element from view
-                    element.hide();
+                // set image back to element
+                if( tag == "img" ) element.attr("src", imageObj.attr("src"));
+                else element.css("background-image", "url(" + imageObj.attr("src") + ")");
 
-                    // set image back to element
-                    if( tag == "img" ) element.attr("src", imageObj.attr("src"));
-                    else element.css("background-image", "url(" + imageObj.attr("src") + ")");
+                // bring it back with some effect!
+                element[configuration("effect")](configuration("effectTime"));
 
-                    // bring it back with some effect!
-                    element[configuration("effect")](configuration("effectTime"));
+                // remove attribute from element
+                if( configuration("removeAttribute") )
+                    element.removeAttr(configuration("attribute") + " " + configuration("retinaAttribute"));
 
-                    // remove attribute from element
-                    if( configuration("removeAttribute") )
-                        element.removeAttr(configuration("attribute") + " " + configuration("retinaAttribute"));
+                // call after load event
+                _triggerCallback("afterLoad", element);
 
-                    // call after load event
-                    _triggerCallback("afterLoad", element);
+                // unbind error event and remove image object
+                imageObj.off("error").remove();
 
-                    // unbind error event and remove image object
-                    imageObj.off("error").remove();
-
-                    // remove item from waiting cue and possible trigger finished event
-                    _reduceAwaiting();
-                };
-
-                callable();
+                // remove item from waiting cue and possible trigger finished event
+                _reduceAwaiting();
             });
 
             // trigger function before loading image
@@ -259,10 +250,6 @@
 
             // set source
             imageObj.attr("src", element.attr(configuration(_isRetinaDisplay && element.attr(configuration("retinaAttribute")) ? "retinaAttribute" : "attribute")));
-
-            // trigger function before loading image
-            _triggerCallback("onLoad", element);
-            onLoad = true;
 
             // call after load even on cached image
             if( imageObj.complete ) imageObj.load();
@@ -609,7 +596,6 @@
 
             // callbacks
             beforeLoad      : null,
-            onLoad          : null,
             afterLoad       : null,
             onError         : null,
             onFinishedAll   : null

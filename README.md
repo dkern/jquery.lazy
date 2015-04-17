@@ -21,6 +21,12 @@ For [documentation](http://jquery.eisbehr.de/lazy/#parameter), [examples](http:/
 ## Download & Installation
 First of all, you will need [jQuery](http://jquery.com) to use Lazy successfully on your project! If you get this in you can install Lazy by different ways. Some examples below:
 
+#### CDN
+Lazy is available over jsDelivr CDN and can directly included to every page.
+```HTML
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/0.5.3/jquery.lazy.min.js"></script>
+```
+
 #### Self-Hosted
 Download and save one of two available files to include Lazy to your page, either the [development](http://raw.githubusercontent.com/eisbehr-/jquery.lazy/master/jquery.lazy.js) or the [minified](http://raw.githubusercontent.com/eisbehr-/jquery.lazy/master/jquery.lazy.min.js) version.
 ```HTML
@@ -59,7 +65,6 @@ Take a look at the [documentation](http://jquery.eisbehr.de/lazy/) to get an ide
 ## Callbacks / Events
 Lazy comes with a bunch of [callbacks and events](http://jquery.eisbehr.de/lazy/index.php?c=callback) you can assign to. Just add them by initialization settings:
 * `beforeLoad` - before image is about to be loaded
-* `onLoad` - on time the image is loading
 * `afterLoad` - after the image was loaded successfully
 * `onError` - whenever an image could not be loaded
 * `onFinishedAll` - after all images in selector was loaded or returned an error
