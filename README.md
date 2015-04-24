@@ -5,8 +5,7 @@
 ---
 
 ## About jQuery.Lazy();
-Lazy is a fast and lightweight delayed image and background loading plugin for jQuery. It is designed to speed up page loading times and decrease traffic to your users and customers by only loading the content in view. You can use Lazy in all scroll ways, from `top-to-bottom`, `bottom-to-top`, `left-to-right` and `right-to-left`. It does not only support images in `<img/>` tags, even backgrounds, supplied with css like `background-image` or other methods, are supported. Lazy can set an default image and a placeholder while loading and support retina displays.
-
+Lazy is a wonderful fast and lightweight delayed image and background loading plugin for jQuery. It is designed to speed up page loading times and decrease traffic to your users and customers by only loading the content in view. You can use Lazy in all scroll ways, from `top-to-bottom`, `bottom-to-top`, `left-to-right` and `right-to-left`. It does not only support images in `<img/>` tags, even backgrounds, supplied with css like `background-image` or other methods, are supported. Lazy can set an default image and a placeholder while loading and support retina displays.
 
 ## Compatibility
 Lazy will work with a wide range of browsers and support jQuery versions for years backwards. You can pick any version since jQuery 1.3.0 or greater. There is no way to guarantee, that Lazy will work with all browsers. But all i've tested worked great. If you find any problems in specific browsers, please let me know. 
