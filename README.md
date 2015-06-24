@@ -1,6 +1,6 @@
 ### jQuery Lazy - Delayed Image and Background Loader
 [![GitHub version](https://badge.fury.io/gh/eisbehr-%2Fjquery.lazy.svg)](http://github.com/eisbehr-/jquery.lazy)
-[![Dependency version](https://david-dm.org/eisbehr-/jquery.lazy.png)](https://david-dm.org/eisbehr-/jquery.lazy)
+[![Dependency version](https://david-dm.org/eisbehr-/jquery.lazy.svg)](https://david-dm.org/eisbehr-/jquery.lazy)
 
 ---
 
