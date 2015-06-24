@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.5.3
+ * jQuery Lazy - v0.5.4
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -133,7 +133,7 @@
                         _actualWidth = _actualHeight = -1;
 
                     // append 'lazy magic' to queue
-                    _addToQueue(function() { _lazyLoadImages(event.all) }, instance, true);
+                    _addToQueue(function() { _lazyLoadImages(event.all); }, instance, true);
                 });
 
                 // bind lazy load functions to scroll and resize event
@@ -181,7 +181,7 @@
                             element.data(configuration("handledName"), true);
 
                             // add item to loading queue
-                            _addToQueue(function() { _handleItem(element, tag) });
+                            _addToQueue(function() { _handleItem(element, tag); });
                         }
                     }
                 })(items[i]);
@@ -287,7 +287,7 @@
          */
         function _getActualWidth()
         {
-            return _actualWidth = _getDimension(_actualWidth, "Width");
+            return (_actualWidth = _getDimension(_actualWidth, "Width"));
         }
 
         /**
@@ -297,7 +297,7 @@
          */
         function _getActualHeight()
         {
-            return _actualHeight = _getDimension(_actualHeight, "Height");
+            return (_actualHeight = _getDimension(_actualHeight, "Height"));
         }
 
         /**
@@ -368,7 +368,7 @@
          */
         function _triggerCallback(callback, element)
         {
-            if( callback = configuration(callback) )
+            if( (callback = configuration(callback)) )
             {
                 if( element )
                     _addToQueue(function() { callback(element); }, instance);
@@ -422,7 +422,7 @@
                 return;
             }
 
-            if( callable = _queueItems.shift() )
+            if( (callable = _queueItems.shift()) )
             {
                 if( callable[2] ) _queueContainsMagic = false;
                 callable[0].call(callable[1] || window);
@@ -509,7 +509,7 @@
          */
         _instance.update = function(useThrottle)
         {
-            _event.e({}, !useThrottle);
+            if( _event.e ) _event.e({}, !useThrottle);
         };
 
         /**
@@ -520,7 +520,7 @@
          */
         _instance.loadAll = function()
         {
-            _event.e({all: true});
+            if( _event.e ) _event.e({all: true});
         };
 
         /**
