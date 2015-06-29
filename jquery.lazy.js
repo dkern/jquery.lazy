@@ -100,20 +100,7 @@
             if( configuration("defaultImage") !== null || configuration("placeholder") !== null )
                 for( var i = 0; i < items.length; i++ )
                 {
-                    var element = $(items[i]),
-                        tag = items[i].tagName.toLowerCase(),
-                        propertyName = "background-image";
-
-                    // append instance to all elements
-                    element.data("plugin_" + instance.name, instance);
-
-                    // set default image on every element without source
-                    if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
-                        element.attr("src", configuration("defaultImage"));
-
-                    // set placeholder on every element without background image
-                    else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
-                        element.css(propertyName, "url(" + configuration("placeholder") + ")");
+                    _addItemPlaceHolder(items[i]);
                 }
 
             // if delay time is set load all images at once after delay time
@@ -136,6 +123,14 @@
                     _addToQueue(function() { _lazyLoadImages(event.all); }, instance, true);
                 });
 
+                event.show = function(event){
+                    _lazyLoadImages();
+                };
+
+                event.addItems = function(event){
+                    items = event.items;
+                };
+
                 // bind lazy load functions to scroll and resize event
                 $(configuration("appendScroll")).on("scroll." + instance.name + " resize." + instance.name, event.e);
             }
@@ -150,10 +145,11 @@
         function _lazyLoadImages(allImages)
         {
             // stop and unbind if no items where left
-            if( !items.length ) return instance.destroy();
+            if( !items.length && configuration("autoDestroy") )
+                return instance.destroy();
 
             // helper to see if something was changed
-            var loadedImages = false;
+            var loadTriggered = false;
 
             // loop all available items
             for( var i = 0; i < items.length; i++ )
@@ -167,9 +163,14 @@
                         // skip element if already loaded, this may happen because of queued cleanup function
                         if( element.data(configuration("handledName")) ) return;
 
-                        if( // image source attribute is available
+                        if (element.attr(configuration("customLoaderAttribute"))){
+                            loadTriggered = true;
+                            element.data(configuration("handledName"), true);
+                            var handler = configuration("customLoader");
+                            _addToQueue(function() { handler(element); });
+                        } else if( // image source attribute is available
                             element.attr(configuration("attribute")) &&
-                            // and is image tag where attribute is not equal source 
+                            // and is image tag where attribute is not equal source
                             ((tag == "img" && element.attr(configuration("attribute")) != element.attr("src")) ||
                             // or is non image tag where attribute is not equal background
                             ((tag != "img" && element.attr(configuration("attribute")) != element.css("background-image"))) ) &&
@@ -177,7 +178,7 @@
                             (element.is(":visible") || !configuration("visibleOnly")) )
                         {
                             // mark element always as handled as this point to prevent double loading
-                            loadedImages = true;
+                            loadTriggered = true;
                             element.data(configuration("handledName"), true);
 
                             // add item to loading queue
@@ -187,7 +188,7 @@
                 })(items[i]);
 
             // when something was loaded remove them from remaining items
-            if( loadedImages ) _addToQueue(function()
+            if( loadTriggered ) _addToQueue(function()
             {
                 items = $(items).filter(function()
                 {
@@ -254,6 +255,23 @@
             // call after load even on cached image
             if( imageObj.complete ) imageObj.load();
         }
+
+        /**
+         * add additional items
+         * @access public
+         * @param {array} items
+         * @return void
+         */
+        function addItems(newItems)
+        {
+            if( configuration("defaultImage") !== null || configuration("placeholder") !== null )
+                for( var i = 0; i < items.length; i++ )
+                {
+                    _addItemPlaceHolder(items[i]);
+                }
+            _items.push.apply(_items, newItems);
+        }
+
 
         /**
          * check if the given element is inside the current viewport or threshold
@@ -355,7 +373,7 @@
         {
             --_awaitingAfterLoad;
 
-            // if no items were left trigger finished event 
+            // if no items were left trigger finished event
             if( !items.size() && !_awaitingAfterLoad ) _triggerCallback("onFinishedAll", null);
         }
 
@@ -427,6 +445,30 @@
                 if( callable[2] ) _queueContainsMagic = false;
                 callable[0].call(callable[1] || window);
             }
+        }
+
+        /**
+         * add new image placeholder
+         * @access private
+         * @param {object} item
+         * @returns void
+         */
+        function _addItemPlaceHolder(item)
+        {
+            var element = $(item),
+                tag = item.tagName.toLowerCase(),
+                propertyName = "background-image";
+
+            // append instance to all elements
+            element.data("plugin_" + instance.name, instance);
+
+            // set default image on every element without source
+            if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
+                element.attr("src", configuration("defaultImage"));
+
+            // set placeholder on every element without background image
+            else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
+                element.css(propertyName, "url(" + configuration("placeholder") + ")");
         }
 
         // set up lazy
@@ -512,6 +554,31 @@
             if( _event.e ) _event.e({}, !useThrottle);
         };
 
+        _instance.show = function()
+        {
+            if( _event.show )
+                _event.show();
+        };
+
+        _instance.configure = function(entryName, value)
+        {
+            _instance.configuration[entryName] = value;
+        };
+
+
+        /**
+         * add addtional elements to be lazy loadable
+         * @access public
+         * @type {function}
+         * @param {array} [items]
+         * @returns void
+         */
+
+        _instance.addItems = function(newItems)
+        {
+            _event.addItems({items: newItems});
+        };
+
         /**
          * force lazy to load all images right now
          * @access public
@@ -544,7 +611,7 @@
         return _configuration("chainable") ? elements : _instance;
     }
 
-    // use jquery to extend class prototype without conflicts 
+    // use jquery to extend class prototype without conflicts
     $.extend(LazyPlugin.prototype,
     {
         /**
@@ -567,6 +634,7 @@
             threshold       : 500,
             fallbackWidth   : 2000,
             fallbackHeight  : 2000,
+            autoDestroy     : true,
             visibleOnly     : false,
             appendScroll    : window,
             scrollDirection : "both",
@@ -579,6 +647,8 @@
 
             // attributes
             attribute       : "data-src",
+            customLoader    : null,
+            customLoaderAttribute: "data-lazy-src",
             retinaAttribute : "data-retina",
             removeAttribute : true,
             handledName     : "handled",
