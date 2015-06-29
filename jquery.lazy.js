@@ -128,7 +128,7 @@
                 };
 
                 event.addItems = function(event){
-                    items = event.items;
+                    _addItems(event.items);
                 };
 
                 // bind lazy load functions to scroll and resize event
@@ -262,14 +262,14 @@
          * @param {array} items
          * @return void
          */
-        function addItems(newItems)
+        function _addItems(newItems)
         {
             if( configuration("defaultImage") !== null || configuration("placeholder") !== null )
-                for( var i = 0; i < items.length; i++ )
+                for( var i = 0; i < newItems.length; i++ )
                 {
-                    _addItemPlaceHolder(items[i]);
+                    _addItemPlaceHolder(newItems[i]);
                 }
-            _items.push.apply(_items, newItems);
+            items.push.apply(items, newItems);
         }
 
 
@@ -577,6 +577,7 @@
         _instance.addItems = function(newItems)
         {
             _event.addItems({items: newItems});
+            return _instance;
         };
 
         /**
