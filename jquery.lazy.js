@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.5.4
+ * jQuery Lazy - v0.6.0
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -30,10 +30,10 @@
      * @param {LazyPlugin} instance
      * @param {function} configuration
      * @param {object} items
-     * @param {object} event
-     * @returns void
+     * @param {object} events
+     * @return void
      */
-    function _executeLazy(instance, configuration, items, event)
+    function _executeLazy(instance, configuration, items, events)
     {
         /**
          * a helper to trigger the onFinishedAll callback after all other events
@@ -97,11 +97,7 @@
             _isRetinaDisplay = window.devicePixelRatio > 1;
 
             // bind instance to every element and set default image and placeholder to all images if nothing else is set
-            if( configuration("defaultImage") !== null || configuration("placeholder") !== null )
-                for( var i = 0; i < items.length; i++ )
-                {
-                    _addItemPlaceHolder(items[i]);
-                }
+            _addItemsPlaceholder(items);
 
             // if delay time is set load all images at once after delay time
             if( configuration("delay") >= 0 ) setTimeout(function() { _lazyLoadImages(true); }, configuration("delay"));
@@ -113,7 +109,7 @@
                 _lazyLoadImages();
 
                 // create unique event function
-                event.e = _throttle(configuration("throttle"), function(event)
+                events.e = _throttle(configuration("throttle"), function(event)
                 {
                     // reset detected window size on resize event
                     if( event.type === "resize" )
@@ -123,16 +119,15 @@
                     _addToQueue(function() { _lazyLoadImages(event.all); }, instance, true);
                 });
 
-                event.show = function(event){
-                    _lazyLoadImages();
-                };
-
-                event.addItems = function(event){
-                    _addItems(event.items);
+                // create function to add new items to instance
+                events.a = function(additionalItems)
+                {
+                    _addItemsPlaceholder(additionalItems);
+                    items.push.apply(items, additionalItems);
                 };
 
                 // bind lazy load functions to scroll and resize event
-                $(configuration("appendScroll")).on("scroll." + instance.name + " resize." + instance.name, event.e);
+                $(configuration("appendScroll")).on("scroll." + instance.name + " resize." + instance.name, events.e);
             }
         }
 
@@ -144,9 +139,15 @@
          */
         function _lazyLoadImages(allImages)
         {
-            // stop and unbind if no items where left
-            if( !items.length && configuration("autoDestroy") )
-                return instance.destroy();
+            // skip if no items where left
+            if( !items.length )
+            {
+                // destroy instance if option is enabled
+                if( configuration("autoDestroy") )
+                    instance.destroy();
+
+                return;
+            }
 
             // helper to see if something was changed
             var loadTriggered = false;
@@ -158,31 +159,31 @@
                     if( _isInLoadableArea(item) || allImages )
                     {
                         var element = $(item),
-                            tag = item.tagName.toLowerCase();
+                            tag = item.tagName.toLowerCase(),
+                            customLoader;
 
                         // skip element if already loaded, this may happen because of queued cleanup function
                         if( element.data(configuration("handledName")) ) return;
 
-                        if (element.attr(configuration("customLoaderAttribute"))){
-                            loadTriggered = true;
-                            element.data(configuration("handledName"), true);
-                            var handler = configuration("customLoader");
-                            _addToQueue(function() { handler(element); });
-                        } else if( // image source attribute is available
+                        if( (customLoader = element.attr(configuration("loaderAttribute"))) || (
+                            // image source attribute is available
                             element.attr(configuration("attribute")) &&
                             // and is image tag where attribute is not equal source
                             ((tag == "img" && element.attr(configuration("attribute")) != element.attr("src")) ||
                             // or is non image tag where attribute is not equal background
                             ((tag != "img" && element.attr(configuration("attribute")) != element.css("background-image"))) ) &&
                             // and is visible or visibility doesn't matter
-                            (element.is(":visible") || !configuration("visibleOnly")) )
+                            (element.is(":visible") || !configuration("visibleOnly")) ) )
                         {
                             // mark element always as handled as this point to prevent double loading
                             loadTriggered = true;
                             element.data(configuration("handledName"), true);
 
-                            // add item to loading queue
-                            _addToQueue(function() { _handleItem(element, tag); });
+                            // try to pass element to custom loader function
+                            if( customLoader ) _triggerCallback(customLoader, element);
+
+                            // otherwise add item to loading queue
+                            else _addToQueue(function() { _handleItem(element, tag); });
                         }
                     }
                 })(items[i]);
@@ -257,21 +258,32 @@
         }
 
         /**
-         * add additional items
-         * @access public
-         * @param {array} items
+         * add placeholders to an array of items
+         * @access private
+         * @param {Array|object} items
          * @return void
          */
-        function _addItems(newItems)
+        function _addItemsPlaceholder(items)
         {
             if( configuration("defaultImage") !== null || configuration("placeholder") !== null )
-                for( var i = 0; i < newItems.length; i++ )
+                for( var i = 0; i < items.length; i++ )
                 {
-                    _addItemPlaceHolder(newItems[i]);
-                }
-            items.push.apply(items, newItems);
-        }
+                    var element = $(items[i]),
+                        tag = items[i].tagName.toLowerCase(),
+                        propertyName = "background-image";
 
+                    // append instance to all elements
+                    element.data("plugin_" + instance.name, instance);
+
+                    // set default image on every element without source
+                    if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
+                        element.attr("src", configuration("defaultImage"));
+
+                    // set placeholder on every element without background image
+                    else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
+                        element.css(propertyName, "url(" + configuration("placeholder") + ")");
+                }
+        }
 
         /**
          * check if the given element is inside the current viewport or threshold
@@ -415,7 +427,7 @@
          * @param {function} [callable]
          * @param {object} [context]
          * @param {boolean} [isLazyMagic]
-         * @returns void
+         * @return void
          */
         function _addToQueue(callable, context, isLazyMagic)
         {
@@ -447,30 +459,6 @@
             }
         }
 
-        /**
-         * add new image placeholder
-         * @access private
-         * @param {object} item
-         * @returns void
-         */
-        function _addItemPlaceHolder(item)
-        {
-            var element = $(item),
-                tag = item.tagName.toLowerCase(),
-                propertyName = "background-image";
-
-            // append instance to all elements
-            element.data("plugin_" + instance.name, instance);
-
-            // set default image on every element without source
-            if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
-                element.attr("src", configuration("defaultImage"));
-
-            // set placeholder on every element without background image
-            else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
-                element.css(propertyName, "url(" + configuration("placeholder") + ")");
-        }
-
         // set up lazy
         (function()
         {
@@ -499,19 +487,16 @@
      * @access private
      * @param {object} elements
      * @param {object} settings
-     * @returns {object|LazyPlugin}
+     * @return {object|LazyPlugin}
      */
     function LazyPlugin(elements, settings)
     {
-        // overwrite configuration with custom user settings
-        if( settings ) $.extend(this.configuration, settings);
-
         /**
          * this lazy plugin instance
          * @access private
          * @type {LazyPlugin}
          */
-        var _instance = this,
+        var _instance,
 
         /**
          * all selected elements by jquery
@@ -522,23 +507,49 @@
 
         /**
          * instance generated event executed on container scroll or resize
-         * packed in an object to be referenceable
+         * packed in an object to be referenceable and short named because properties will not be minified
          * @access private
          * @type {object}
          */
-        _event = {e: null},
+        _events = {};
+
+        // overwrite configuration with custom user settings
+        if( settings ) $.extend(this.configuration, settings);
+
+        // need to define variable outside declaration because of debug errors
+        _instance = this;
 
         /**
-         * wrapper to get an entry from plugin instance configuration
+         * wrapper to get or set an entry from plugin instance configuration
          * much smaller on minify as direct access
          * @access private
          * @type {function}
          * @param {string} entryName
-         * @return {*}
+         * @param {*} [value]
+         * @return {LazyPlugin|*}
          */
-        _configuration = function(entryName)
+        _instance.config = function(entryName, value)
         {
-            return _instance.configuration[entryName];
+            if( value === undefined )
+                return _instance.configuration[entryName];
+            else
+                _instance.configuration[entryName] = value;
+
+            return _instance;
+        };
+
+        /**
+         * add additional items to current instance
+         * @access public
+         * @param {Array|object|string} items
+         * @return {LazyPlugin}
+         */
+        _instance.addItems = function(items)
+        {
+            if( _events.a )
+                _events.a($.type(items) === "string" ? $(items) : items);
+
+            return _instance;
         };
 
         /**
@@ -547,36 +558,13 @@
          * @access public
          * @type {function}
          * @param {boolean} [useThrottle]
-         * @returns void
+         * @return {LazyPlugin}
          */
         _instance.update = function(useThrottle)
         {
-            if( _event.e ) _event.e({}, !useThrottle);
-        };
+            if( _events.e )
+                _events.e({}, !useThrottle);
 
-        _instance.show = function()
-        {
-            if( _event.show )
-                _event.show();
-        };
-
-        _instance.configure = function(entryName, value)
-        {
-            _instance.configuration[entryName] = value;
-        };
-
-
-        /**
-         * add addtional elements to be lazy loadable
-         * @access public
-         * @type {function}
-         * @param {array} [items]
-         * @returns void
-         */
-
-        _instance.addItems = function(newItems)
-        {
-            _event.addItems({items: newItems});
             return _instance;
         };
 
@@ -584,32 +572,35 @@
          * force lazy to load all images right now
          * @access public
          * @type {function}
-         * @returns void
+         * @return {LazyPlugin}
          */
         _instance.loadAll = function()
         {
-            if( _event.e ) _event.e({all: true});
+            if( _events.e )
+                _events.e({all: true});
+    
+            return _instance;
         };
 
         /**
          * destroy this plugin instance
          * @access public
          * @type {function}
-         * @returns void
+         * @return void
          */
         _instance.destroy = function ()
         {
             // unbind instance generated events
-            $(_configuration("appendScroll")).off("." + _instance.name, _event.e);
+            $(_instance.config("appendScroll")).off("." + _instance.name, _events.e);
 
             // clear items and event
             _items = {};
-            _event.e = null;
+            _events.e = null;
         };
 
         // start using lazy and return all elements to be chainable or instance for further use
-        _executeLazy(_instance, _configuration, _items, _event);
-        return _configuration("chainable") ? elements : _instance;
+        _executeLazy(_instance, _instance.config, _items, _events);
+        return _instance.config("chainable") ? elements : _instance;
     }
 
     // use jquery to extend class prototype without conflicts
@@ -631,11 +622,11 @@
         {
             // general
             chainable       : true,
+            autoDestroy     : true,
             bind            : "load",
             threshold       : 500,
             fallbackWidth   : 2000,
             fallbackHeight  : 2000,
-            autoDestroy     : true,
             visibleOnly     : false,
             appendScroll    : window,
             scrollDirection : "both",
@@ -648,9 +639,8 @@
 
             // attributes
             attribute       : "data-src",
-            customLoader    : null,
-            customLoaderAttribute: "data-lazy-src",
             retinaAttribute : "data-retina",
+            loaderAttribute : "data-loader",
             removeAttribute : true,
             handledName     : "handled",
 
