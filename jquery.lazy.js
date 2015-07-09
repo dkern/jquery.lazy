@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.0
+ * jQuery Lazy - v0.6.0.rc1
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -9,7 +9,7 @@
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl-2.0.html
  *
- * jQuery("img.lazy").lazy();
+ * jQuery("img.lazy").Lazy();
  */
 
 ;(function($, window, document, undefined)
@@ -36,7 +36,7 @@
     function _executeLazy(instance, configuration, items, events)
     {
         /**
-         * a helper to trigger the onFinishedAll callback after all other events
+         * a helper to trigger the 'onFinishedAll' callback after all other events
          * @access private
          * @type {number}
          */
@@ -86,7 +86,7 @@
 
         /**
          * initialize plugin
-         * bind loading to events or set delay time to load all images at once
+         * bind loading to events or set delay time to load all items at once
          * @access private
          * @return void
          */
@@ -96,17 +96,17 @@
             // noinspection JSUnresolvedVariable
             _isRetinaDisplay = window.devicePixelRatio > 1;
 
-            // bind instance to every element and set default image and placeholder to all images if nothing else is set
+            // bind instance to every element and set default image and placeholder to all items if nothing else is set
             _addItemsPlaceholder(items);
 
-            // if delay time is set load all images at once after delay time
-            if( configuration("delay") >= 0 ) setTimeout(function() { _lazyLoadImages(true); }, configuration("delay"));
+            // if delay time is set load all items at once after delay time
+            if( configuration("delay") >= 0 ) setTimeout(function() { _lazyLoadItems(true); }, configuration("delay"));
 
             // if no delay is set or combine usage is active bind events
             if( configuration("delay") < 0 || configuration("combined") )
             {
-                // load initial images
-                _lazyLoadImages();
+                // load initial items
+                _lazyLoadItems();
 
                 // create unique event function
                 events.e = _throttle(configuration("throttle"), function(event)
@@ -115,8 +115,8 @@
                     if( event.type === "resize" )
                         _actualWidth = _actualHeight = -1;
 
-                    // append 'lazy magic' to queue
-                    _addToQueue(function() { _lazyLoadImages(event.all); }, instance, true);
+                    // append 'lazy magic' to queue - execute directly on load all
+                    _addToQueue(function() { _lazyLoadItems(event.all); }, instance, !event.all);
                 });
 
                 // create function to add new items to instance
@@ -134,10 +134,10 @@
         /**
          * the 'lazy magic' - check all items
          * @access private
-         * @param {boolean} [allImages]
+         * @param {boolean} [allItems]
          * @return void
          */
-        function _lazyLoadImages(allImages)
+        function _lazyLoadItems(allItems)
         {
             // skip if no items where left
             if( !items.length )
@@ -156,7 +156,7 @@
             for( var i = 0; i < items.length; i++ )
                 (function(item)
                 {
-                    if( _isInLoadableArea(item) || allImages )
+                    if( _isInLoadableArea(item) || allItems )
                     {
                         var element = $(item),
                             tag = item.tagName.toLowerCase(),
@@ -179,11 +179,8 @@
                             loadTriggered = true;
                             element.data(configuration("handledName"), true);
 
-                            // try to pass element to custom loader function
-                            if( customLoader ) _triggerCallback(customLoader, element);
-
                             // otherwise add item to loading queue
-                            else _addToQueue(function() { _handleItem(element, tag); });
+                            _addToQueue(function() { _handleItem(element, tag, customLoader); });
                         }
                     }
                 })(items[i]);
@@ -203,77 +200,116 @@
          * @access private
          * @param {object} element
          * @param {string} tag
+         * @param {function} [customLoader]
          * @return void
          */
-        function _handleItem(element, tag)
+        function _handleItem(element, tag, customLoader)
         {
-            // create image object
-            var imageObj = $(new Image());
-
             // increment count of items waiting for after load
             ++_awaitingAfterLoad;
 
-            // bind error event to trigger callback and reduce waiting amount
-            imageObj.error(function()
+            // extended error callback for correct 'onFinishedAll' handling
+            var errorCallback = function()
             {
                 _triggerCallback("onError", element);
                 _reduceAwaiting();
-            });
-
-            // bind after load callback to image
-            imageObj.one("load", function()
-            {
-                // remove element from view
-                element.hide();
-
-                // set image back to element
-                if( tag == "img" ) element.attr("src", imageObj.attr("src"));
-                else element.css("background-image", "url(" + imageObj.attr("src") + ")");
-
-                // bring it back with some effect!
-                element[configuration("effect")](configuration("effectTime"));
-
-                // remove attribute from element
-                if( configuration("removeAttribute") )
-                    element.removeAttr(configuration("attribute") + " " + configuration("retinaAttribute"));
-
-                // call after load event
-                _triggerCallback("afterLoad", element);
-
-                // unbind error event and remove image object
-                imageObj.off("error").remove();
-
-                // remove item from waiting cue and possible trigger finished event
-                _reduceAwaiting();
-            });
+            };
 
             // trigger function before loading image
             _triggerCallback("beforeLoad", element);
 
-            // set source
-            imageObj.attr("src", element.attr(configuration(_isRetinaDisplay && element.attr(configuration("retinaAttribute")) ? "retinaAttribute" : "attribute")));
+            // handle custom loader
+            if( customLoader )
+            {
+                // bind error event to trigger callback and reduce waiting amount
+                element.off("error").one("error", errorCallback);
 
-            // call after load even on cached image
-            if( imageObj.complete ) imageObj.load();
+                // bind after load callback to image
+                element.one("load", function()
+                {
+                    // remove attribute from element
+                    if( configuration("removeAttribute") )
+                        element.removeAttr(configuration("loaderAttribute"));
+
+                    // call after load event
+                    _triggerCallback("afterLoad", element);
+
+                    // unbind error event and remove image object
+                    element.off("error");
+
+                    // remove item from waiting cue and possible trigger finished event
+                    _reduceAwaiting();
+                });
+
+                // trigger custom loader
+                if( !_triggerCallback(customLoader, element, function(response)
+                {
+                    if( response ) element.load();
+                    else element.error();
+                })) element.error();
+            }
+
+            // handle images
+            else
+            {
+                // create image object
+                var imageObj = $(new Image());
+
+                // bind error event to trigger callback and reduce waiting amount
+                imageObj.error(errorCallback);
+
+                // bind after load callback to image
+                imageObj.one("load", function()
+                {
+                    // remove element from view
+                    element.hide();
+
+                    // set image back to element
+                    if( tag == "img" ) element.attr("src", imageObj.attr("src"));
+                    else element.css("background-image", "url(" + imageObj.attr("src") + ")");
+
+                    // bring it back with some effect!
+                    element[configuration("effect")](configuration("effectTime"));
+
+                    // remove attribute from element
+                    if( configuration("removeAttribute") )
+                        element.removeAttr(configuration("attribute") + " " + configuration("retinaAttribute"));
+
+                    // call after load event
+                    _triggerCallback("afterLoad", element);
+
+                    // unbind error event and remove image object
+                    imageObj.off("error").remove();
+
+                    // remove item from waiting cue and possible trigger finished event
+                    _reduceAwaiting();
+                });
+
+                // set source
+                imageObj.attr("src", element.attr(configuration(_isRetinaDisplay && element.attr(configuration("retinaAttribute")) ? "retinaAttribute" : "attribute")));
+
+                // call after load even on cached image
+                if( imageObj.complete ) imageObj.load();
+            }
         }
 
         /**
-         * add placeholders to an array of items
+         * add placeholders to an jquery object of items
          * @access private
-         * @param {Array|object} items
+         * @param {Array|object|jQuery} items
          * @return void
          */
         function _addItemsPlaceholder(items)
         {
-            if( configuration("defaultImage") !== null || configuration("placeholder") !== null )
+            // append instance to all elements
+            items.data("plugin_" + instance.name, instance);
+
+            if( configuration("defaultImage") || configuration("placeholder") )
                 for( var i = 0; i < items.length; i++ )
                 {
                     var element = $(items[i]),
                         tag = items[i].tagName.toLowerCase(),
                         propertyName = "background-image";
-
-                    // append instance to all elements
-                    element.data("plugin_" + instance.name, instance);
 
                     // set default image on every element without source
                     if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
@@ -366,7 +402,7 @@
                 function run()
                 {
                     lastExecute = +new Date();
-                    callback.call(undefined, event);
+                    callback.call(instance, event);
                 }
 
                 timeout && clearTimeout(timeout);
@@ -390,35 +426,24 @@
         }
 
         /**
-         * single implementation to handle callbacks and pass parameter
+         * single implementation to handle callbacks, pass element and set 'this' to current instance
          * @access private
          * @param {string|function} callback
          * @param {object} [element]
-         * @return void
+         * @param {*} [args]
+         * @return {boolean}
          */
-        function _triggerCallback(callback, element)
+        function _triggerCallback(callback, element, args)
         {
             if( (callback = configuration(callback)) )
             {
-                if( element )
-                    _addToQueue(function() { callback(element); }, instance);
-                else
-                    _addToQueue(callback, instance);
+                args = $(arguments).slice(1);
+                _addToQueue(function() { callback.apply(instance, args); });
+                
+                return true;
             }
-        }
 
-        /**
-         * set next timer for queue execution
-         * @access private
-         * @return void
-         */
-        function _setQueueTimer()
-        {
-            _queueTimer = setTimeout(function()
-            {
-                _addToQueue();
-                if( _queueItems.length ) _setQueueTimer();
-            }, 2);
+            return false;
         }
 
         /**
@@ -459,10 +484,24 @@
             }
         }
 
+        /**
+         * set next timer for queue execution
+         * @access private
+         * @return void
+         */
+        function _setQueueTimer()
+        {
+            _queueTimer = setTimeout(function()
+            {
+                _addToQueue();
+                if( _queueItems.length ) _setQueueTimer();
+            }, 2);
+        }
+
         // set up lazy
         (function()
         {
-            // late-bind error callback to images if set
+            // late-bind error callback to items if set
             if( configuration("onError") )
                 for( var i = 0; i < items.length; i++ )
                     _addToQueue(function()
@@ -476,7 +515,7 @@
             // if event driven don't wait for page loading
             if( configuration("bind") == "event" ) _initialize();
 
-            // otherwise load initial images and start lazy after page load
+            // otherwise load initial items and start lazy after page load
             else $(window).load(_initialize);
         })();
     }
@@ -553,7 +592,7 @@
         };
 
         /**
-         * force lazy to load all images in loadable area right now
+         * force lazy to load all items in loadable area right now
          * by default without throttle
          * @access public
          * @type {function}
@@ -569,7 +608,8 @@
         };
 
         /**
-         * force lazy to load all images right now
+         * force lazy to load all available items right now
+         * this call ignores throttling
          * @access public
          * @type {function}
          * @return {LazyPlugin}
@@ -577,8 +617,8 @@
         _instance.loadAll = function()
         {
             if( _events.e )
-                _events.e({all: true});
-    
+                _events.e({all: true}, true);
+
             return _instance;
         };
 
@@ -593,9 +633,9 @@
             // unbind instance generated events
             $(_instance.config("appendScroll")).off("." + _instance.name, _events.e);
 
-            // clear items and event
+            // clear items and events
             _items = {};
-            _events.e = null;
+            _events = {};
         };
 
         // start using lazy and return all elements to be chainable or instance for further use
