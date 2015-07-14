@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.0.rc2
+ * jQuery Lazy - v0.6.0.rc3
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -17,7 +17,7 @@
     "use strict";
 
     // make lazy a bit more case-insensitive :)
-    $.fn.Lazy = $.fn[LazyPlugin.name] = function(settings)
+    $.fn.Lazy = $.fn.lazy = function(settings)
     {
         return new LazyPlugin(this, settings);
     };

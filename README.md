@@ -27,7 +27,7 @@
 Lazy is a fast, feature-rich and lightweight delayed content loading plugin for jQuery. 
 It's designed to speed up page loading times and decrease traffic to your users by only loading the content in view. 
 You can use Lazy in all vertical and horizontal scroll ways.
-It supports images in `<img/>` tags and backgrounds, supplied with css like `background-image`, by default or any other content by custom loaders. 
+It supports images in `<img/>` tags and backgrounds, supplied with css like `background-image`, by default or any other content by [custom loaders](#custom-content-loaders). 
 On images Lazy can set an default image or a placeholder while loading and supports retina displays as well.
 
 
@@ -109,11 +109,11 @@ Just initialize them with different selectors on jQuery.
 To access an instances public functions you can initialize them in an object oriented manner or grab the instance bind to every element by default:
 ```JS
 // object oriented way
-var instance = jQuery("img.lazy").Lazy({chainable: false});
+var instance = $("img.lazy").Lazy({chainable: false});
 
 // grab from elements (only works well if you use same selectors)
-jQuery("img.lazy").Lazy();
-var instance = jQuery("img.lazy").data("plugin_lazy");
+$("img.lazy").Lazy();
+var instance = $("img.lazy").data("plugin_lazy");
 ```
 
 Every instance has some public available functions to control its behavior.
@@ -133,7 +133,7 @@ With the custom loaders option there is a powerful solution to load every conten
 The plugin will handle everything, you just create a loading method witch got triggered whenever the element hits the visibility threshold.
 It is still possible to load images and custom loaders in the same Lazy instance.
 
-To use a this just define a loader function inside the Lazy initialisation and pass the loader name to the `data-loader` attribute of the elements witch should be 1azy loaded.
+To use this just define a loader function inside the Lazy initialisation and pass the loader name to the `data-loader` attribute of the elements witch should be lazy loaded.
 ```HTML
 <div class="lazy" data-loader="customLoaderName"></div>
 <img class="lazy" data-src="path/to/image_to_load.jpg" src="" />
