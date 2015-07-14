@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.0.rc1
+ * jQuery Lazy - v0.6.0.rc2
  * http://jquery.eisbehr.de/lazy/
  * http://eisbehr.de
  *
@@ -17,7 +17,7 @@
     "use strict";
 
     // make lazy a bit more case-insensitive :)
-    $.fn.Lazy = $.fn.lazy = function(settings)
+    $.fn.Lazy = $.fn[LazyPlugin.name] = function(settings)
     {
         return new LazyPlugin(this, settings);
     };
@@ -96,8 +96,8 @@
             // noinspection JSUnresolvedVariable
             _isRetinaDisplay = window.devicePixelRatio > 1;
 
-            // bind instance to every element and set default image and placeholder to all items if nothing else is set
-            _addItemsPlaceholder(items);
+            // prepare all initial items
+            _prepareItems(items);
 
             // if delay time is set load all items at once after delay time
             if( configuration("delay") >= 0 ) setTimeout(function() { _lazyLoadItems(true); }, configuration("delay"));
@@ -122,8 +122,14 @@
                 // create function to add new items to instance
                 events.a = function(additionalItems)
                 {
-                    _addItemsPlaceholder(additionalItems);
+                    _prepareItems(additionalItems);
                     items.push.apply(items, additionalItems);
+                };
+
+                // create function to get all instance items left
+                events.g = function()
+                {
+                    return items;
                 };
 
                 // bind lazy load functions to scroll and resize event
@@ -160,26 +166,27 @@
                     {
                         var element = $(item),
                             tag = item.tagName.toLowerCase(),
+                            attribute = element.attr(configuration("attribute")),
                             customLoader;
 
-                        // skip element if already loaded, this may happen because of queued cleanup function
-                        if( element.data(configuration("handledName")) ) return;
-
-                        if( (customLoader = element.attr(configuration("loaderAttribute"))) || (
-                            // image source attribute is available
-                            element.attr(configuration("attribute")) &&
-                            // and is image tag where attribute is not equal source
-                            ((tag == "img" && element.attr(configuration("attribute")) != element.attr("src")) ||
-                            // or is non image tag where attribute is not equal background
-                            ((tag != "img" && element.attr(configuration("attribute")) != element.css("background-image"))) ) &&
+                            // is not already handled 
+                        if( !element.data(configuration("handledName")) && 
                             // and is visible or visibility doesn't matter
-                            (element.is(":visible") || !configuration("visibleOnly")) ) )
+                            (element.is(":visible") || !configuration("visibleOnly")) && (
+                            // and custom loader is available
+                            (customLoader = element.attr(configuration("loaderAttribute")))  ||
+                            // or image source attribute is available
+                            attribute && (
+                            // and is image tag where attribute is not equal source
+                            (tag == "img" && attribute != element.attr("src")) ||
+                            // or is non image tag where attribute is not equal background
+                            (tag != "img" && attribute != element.css("background-image")) )))
                         {
                             // mark element always as handled as this point to prevent double loading
                             loadTriggered = true;
                             element.data(configuration("handledName"), true);
 
-                            // otherwise add item to loading queue
+                            // add item to loading queue
                             _addToQueue(function() { _handleItem(element, tag, customLoader); });
                         }
                     }
@@ -193,6 +200,52 @@
                     return !$(this).data(configuration("handledName"));
                 });
             });
+        }
+
+        /**
+         * prepare items before 
+         * @access private
+         * @param {Array|object|jQuery} items
+         * @return void
+         */
+        function _prepareItems(items)
+        {
+            // filter items and only add those who not handled yet and got needed attributes available
+            items = $(items).filter(function()
+            {
+                return !$(this).data(configuration("handledName")) && ($(this).attr(configuration("attribute")) || $(this).attr(configuration("loaderAttribute")));
+            })
+
+            // append plugin instance to all elements
+            .data("plugin_" + instance.name, instance);
+
+            // late-bind error callback to items if set
+            if( configuration("onError") )
+                for( var i = 0; i < items.length; i++ )
+                    _addToQueue(function()
+                    {
+                        $(this).on("error." + instance.name, function()
+                        {
+                            _triggerCallback("onError", $(this));
+                        });
+                    }, items[i]);
+
+            // set default image and/or placeholder to elements if set
+            if( configuration("defaultImage") || configuration("placeholder") )
+                for( i = 0; i < items.length; i++ )
+                {
+                    var element = $(items[i]),
+                        tag = items[i].tagName.toLowerCase(),
+                        propertyName = "background-image";
+
+                    // set default image on every element without source
+                    if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
+                        element.attr("src", configuration("defaultImage"));
+
+                    // set placeholder on every element without background image
+                    else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
+                        element.css(propertyName, "url(" + configuration("placeholder") + ")");
+                }
         }
 
         /**
@@ -294,34 +347,6 @@
         }
 
         /**
-         * add placeholders to an jquery object of items
-         * @access private
-         * @param {Array|object|jQuery} items
-         * @return void
-         */
-        function _addItemsPlaceholder(items)
-        {
-            // append instance to all elements
-            items.data("plugin_" + instance.name, instance);
-
-            if( configuration("defaultImage") || configuration("placeholder") )
-                for( var i = 0; i < items.length; i++ )
-                {
-                    var element = $(items[i]),
-                        tag = items[i].tagName.toLowerCase(),
-                        propertyName = "background-image";
-
-                    // set default image on every element without source
-                    if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
-                        element.attr("src", configuration("defaultImage"));
-
-                    // set placeholder on every element without background image
-                    else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
-                        element.css(propertyName, "url(" + configuration("placeholder") + ")");
-                }
-        }
-
-        /**
          * check if the given element is inside the current viewport or threshold
          * @access private
          * @param {object} element
@@ -330,6 +355,7 @@
         function _isInLoadableArea(element)
         {
             var elementBound = element.getBoundingClientRect(),
+                direction    = configuration("scrollDirection"),
                 threshold    = configuration("threshold"),
                 vertical     = // check if element is in loadable area from top
                                ((_getActualHeight() + threshold) > elementBound.top) &&
@@ -337,11 +363,11 @@
                                (-threshold < elementBound.bottom),
                 horizontal   = // check if element is in loadable area from left
                                ((_getActualWidth() + threshold) > elementBound.left) &&
-                               // check if element is even in loadable are from right
+                               // check if element is even in loadable area from right
                                (-threshold < elementBound.right);
 
-            if( configuration("scrollDirection") == "vertical" ) return vertical;
-            else if( configuration("scrollDirection") == "horizontal" ) return horizontal;
+            if( direction == "vertical" ) return vertical;
+            else if( direction == "horizontal" ) return horizontal;
 
             return vertical && horizontal;
         }
@@ -353,7 +379,7 @@
          */
         function _getActualWidth()
         {
-            return (_actualWidth = _getDimension(_actualWidth, "Width"));
+            return _actualWidth >= 0 ? _actualWidth : (_actualWidth = $(window).width());
         }
 
         /**
@@ -363,25 +389,7 @@
          */
         function _getActualHeight()
         {
-            return (_actualHeight = _getDimension(_actualHeight, "Height"));
-        }
-
-        /**
-         * try to allocate current viewed dimension (width or height) of the browser
-         * uses fallback option when no dimension is found
-         * @access private
-         * @param {number} buffer
-         * @param {string} type
-         * @return {number}
-         */
-        function _getDimension(buffer, type)
-        {
-            if( buffer >= 0 ) return buffer;
-
-            return window["inner" + type] ||
-                   (document.documentElement || document.body)["client" + type] ||
-                   document.body["offset" + type] ||
-                   configuration("fallback" + type);
+            return _actualHeight >= 0 ? _actualHeight : (_actualHeight = $(window).height());
         }
 
         /**
@@ -439,7 +447,7 @@
             {
                 args = $(arguments).slice(1);
                 _addToQueue(function() { callback.apply(instance, args); });
-                
+
                 return true;
             }
 
@@ -501,17 +509,6 @@
         // set up lazy
         (function()
         {
-            // late-bind error callback to items if set
-            if( configuration("onError") )
-                for( var i = 0; i < items.length; i++ )
-                    _addToQueue(function()
-                    {
-                        $(this).on("error." + instance.name, function()
-                        {
-                            _triggerCallback("onError", $(this));
-                        });
-                    }, items[i]);
-
             // if event driven don't wait for page loading
             if( configuration("bind") == "event" ) _initialize();
 
@@ -538,13 +535,6 @@
         var _instance,
 
         /**
-         * all selected elements by jquery
-         * @access private
-         * @type {object}
-         */
-        _items = elements,
-
-        /**
          * instance generated event executed on container scroll or resize
          * packed in an object to be referenceable and short named because properties will not be minified
          * @access private
@@ -555,9 +545,10 @@
         // overwrite configuration with custom user settings
         if( settings ) $.extend(this.configuration, settings);
 
-        // need to define variable outside declaration because of debug errors
+        // need to define variable outside declaration because of debug errors :)
         _instance = this;
 
+        // noinspection JSUndefinedPropertyAssignment
         /**
          * wrapper to get or set an entry from plugin instance configuration
          * much smaller on minify as direct access
@@ -577,6 +568,7 @@
             return _instance;
         };
 
+        // noinspection JSUndefinedPropertyAssignment
         /**
          * add additional items to current instance
          * @access public
@@ -591,6 +583,18 @@
             return _instance;
         };
 
+        // noinspection JSUndefinedPropertyAssignment
+        /**
+         * get all left items of this instance
+         * @access public
+         * @returns {object}
+         */
+        _instance.getItems = function()
+        {
+            return _events.g ? _events.g() : {};
+        };
+
+        // noinspection JSUndefinedPropertyAssignment
         /**
          * force lazy to load all items in loadable area right now
          * by default without throttle
@@ -607,6 +611,7 @@
             return _instance;
         };
 
+        // noinspection JSUndefinedPropertyAssignment
         /**
          * force lazy to load all available items right now
          * this call ignores throttling
@@ -622,6 +627,7 @@
             return _instance;
         };
 
+        // noinspection JSUndefinedPropertyAssignment
         /**
          * destroy this plugin instance
          * @access public
@@ -633,13 +639,12 @@
             // unbind instance generated events
             $(_instance.config("appendScroll")).off("." + _instance.name, _events.e);
 
-            // clear items and events
-            _items = {};
+            // clear events
             _events = {};
         };
 
         // start using lazy and return all elements to be chainable or instance for further use
-        _executeLazy(_instance, _instance.config, _items, _events);
+        _executeLazy(_instance, _instance.config, elements, _events);
         return _instance.config("chainable") ? elements : _instance;
     }
 
@@ -665,8 +670,6 @@
             autoDestroy     : true,
             bind            : "load",
             threshold       : 500,
-            fallbackWidth   : 2000,
-            fallbackHeight  : 2000,
             visibleOnly     : false,
             appendScroll    : window,
             scrollDirection : "both",
