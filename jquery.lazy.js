@@ -1,7 +1,6 @@
 /*!
- * jQuery Lazy - v0.6.0.rc3
+ * jQuery Lazy - v0.6.0.rc4
  * http://jquery.eisbehr.de/lazy/
- * http://eisbehr.de
  *
  * Copyright 2012 - 2015, Daniel 'Eisbehr' Kern
  *
@@ -9,7 +8,7 @@
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl-2.0.html
  *
- * jQuery("img.lazy").Lazy();
+ * $("img.lazy").Lazy();
  */
 
 ;(function($, window, document, undefined)
@@ -530,9 +529,16 @@
         /**
          * this lazy plugin instance
          * @access private
-         * @type {LazyPlugin}
+         * @type {object|LazyPlugin}
          */
-        var _instance,
+        var _instance = this,
+
+        /**
+         * this lazy plugin instance configuration
+         * @access private
+         * @type {object}
+         */
+        _config = $.extend({}, _instance.configuration, settings),
 
         /**
          * instance generated event executed on container scroll or resize
@@ -541,12 +547,6 @@
          * @type {object}
          */
         _events = {};
-
-        // overwrite configuration with custom user settings
-        if( settings ) $.extend(this.configuration, settings);
-
-        // need to define variable outside declaration because of debug errors :)
-        _instance = this;
 
         // noinspection JSUndefinedPropertyAssignment
         /**
@@ -561,9 +561,9 @@
         _instance.config = function(entryName, value)
         {
             if( value === undefined )
-                return _instance.configuration[entryName];
+                return _config[entryName];
             else
-                _instance.configuration[entryName] = value;
+                _config[entryName] = value;
 
             return _instance;
         };
@@ -675,6 +675,7 @@
             scrollDirection : "both",
             defaultImage    : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
             placeholder     : null,
+            enableQueueing  : true,
 
             // delay
             delay           : -1,
@@ -694,9 +695,6 @@
             // throttle
             enableThrottle  : true,
             throttle        : 250,
-
-            // queue
-            enableQueueing  : true,
 
             // callbacks
             beforeLoad      : null,
