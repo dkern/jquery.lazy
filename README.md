@@ -165,31 +165,35 @@ The following configurations is available by default:
 
 Name            | Type       | Default       | Description
 --------------- | ---------- | ------------- | -----------
-chainable       | *boolean*  | *true*        | By default Lazy is chainable and will return all elements. If set to `false` Lazy will return the created plugin instance itself for further use.
-autoDestroy     | *boolean*  | *true*        | Will automatically destroy the instance when no further elements are available to handle.
-bind            | *string*   | *load*        | If set to `load`' Lazy starts working directly after page load. If you want to use Lazy on own events set it to `event`'.
-threshold       | *integer*  | *500*         | Amount of pixels below the viewport, in which all images gets loaded before the user sees them.
-visibleOnly     | *boolean*  | *false*       | Determine if only visible elements should be load.
-appendScroll    | *integer*  | *window*      | An element to listen on for scroll events, useful when images are stored in a container.
-scrollDirection | *string*   | *both*        | Determines the handles scroll direction. Possible values are `both`, `vertical` and `horizontal`.
-defaultImage    | *string*   | *blank image* | Base64 image string, set as default image source for every image without a predefined source attribute.
-placeholder     | *string*   | *null*        | Base64 image string, set a background on every element as loading placeholder.
-delay           | *integer*  | *-1*          | If you want to load all elements at once after page load, then you can specify a delay time in milliseconds.
-combined        | *boolean*  | *false*       | With this parameter, Lazy will combine the event driven and delayed element loading.
-enableQueueing  | *boolean*  | *true*        | The queueing of events and calls is used the optimize the performance of Lazy with other scripts and libraries. It could be disable on side effects or to prioritize Lazy.
-attribute       | *string*   | *data-src*    | Name of the image tag attribute, where the image path is stored.
-retinaAttribute | *string*   | *data-retina* | Name of the image tag attribute, where the path for optional retina image is stored.
-loaderAttribute | *string*   | *data-loader* | Name or the element attribute, where the identifier of the customer loader is sored.
-removeAttribute | *boolean*  | *true*        | Determine if the attribute should be removed from the element after loading.
-handledName     | *string*   | *handled*     | Name of the element tag data attribute, to determine if element is already handled.
-effect          | *string*   | *show*        | Function name of the effect you want to use to show the loaded images, like `show` or `fadein`.
-effectTime      | *integer*  | *0*           | Time in milliseconds the effect should use to view the image.
-enableThrottle  | *boolean*  | *true*        | Throttle down the loading calls on scrolling event.
-throttle        | *integer*  | *250*         | Time in milliseconds the throttle will use to limit the loading calls.
-beforeLoad      | *function* | *null*        | Callback function, which will be called before the element gets loaded. Has current element as parameter.
-afterLoad       | *function* | *null*        | Callback function, which will be called after the element was loaded. Has current element as parameter.
-onError         | *function* | *null*        | Callback function, which will be called if the element could not be loaded. Has current element as parameter.
-onFinishedAll   | *function* | *null*        | Callback function, which will be called after all elements was loaded or returned an error. This callback has no parameter.
+chainable       | *boolean*  | *true*        | <sub>By default Lazy is chainable and will return all elements. If set to `false` Lazy will return the created plugin instance itself for further use.</sub>
+autoDestroy     | *boolean*  | *true*        | <sub>Will automatically destroy the instance when no further elements are available to handle.</sub>
+bind            | *string*   | *load*        | <sub>If set to `load`' Lazy starts working directly after page load. If you want to use Lazy on own events set it to `event`'.</sub>
+threshold       | *integer*  | *500*         | <sub>Amount of pixels below the viewport, in which all images gets loaded before the user sees them.</sub>
+visibleOnly     | *boolean*  | *false*       | <sub>Determine if only visible elements should be load.</sub>
+appendScroll    | *integer*  | *window*      | <sub>An element to listen on for scroll events, useful when images are stored in a container.</sub>
+scrollDirection | *string*   | *both*        | <sub>Determines the handles scroll direction. Possible values are `both`, `vertical` and `horizontal`.</sub>
+defaultImage    | *string*   | *blank image* | <sub>Base64 image string, set as default image source for every image without a predefined source attribute.</sub>
+placeholder     | *string*   | *null*        | <sub>Base64 image string, set a background on every element as loading placeholder.</sub>
+delay           | *integer*  | *-1*          | <sub>If you want to load all elements at once after page load, then you can specify a delay time in milliseconds.</sub>
+combined        | *boolean*  | *false*       | <sub>With this parameter, Lazy will combine the event driven and delayed element loading.</sub>
+enableQueueing  | *boolean*  | *true*        | <sub>The queueing of events and calls is used the optimize the performance of Lazy with other scripts and libraries. It could be disable on side effects or to prioritize Lazy.</sub>
+**attributes**  |            |               |
+attribute       | *string*   | *data-src*    | <sub>Name of the image tag attribute, where the image path is stored.</sub>
+retinaAttribute | *string*   | *data-retina* | <sub>Name of the image tag attribute, where the path for optional retina image is stored.</sub>
+loaderAttribute | *string*   | *data-loader* | <sub>Name or the element attribute, where the identifier of the customer loader is sored.</sub>
+removeAttribute | *boolean*  | *true*        | <sub>Determine if the attribute should be removed from the element after loading.</sub>
+handledName     | *string*   | *handled*     | <sub>Name of the element tag data attribute, to determine if element is already handled.</sub>
+**effect**      |            |               |
+effect          | *string*   | *show*        | <sub>Function name of the effect you want to use to show the loaded images, like `show` or `fadein`.</sub>
+effectTime      | *integer*  | *0*           | <sub>Time in milliseconds the effect should use to view the image.</sub>
+**throttle**    |            |               |
+enableThrottle  | *boolean*  | *true*        | <sub>Throttle down the loading calls on scrolling event.</sub>
+throttle        | *integer*  | *250*         | <sub>Time in milliseconds the throttle will use to limit the loading calls.</sub>
+**callbacks**   |            |               |
+beforeLoad      | *function* | *null*        | <sub>Callback function, which will be called before the element gets loaded. Has current element as parameter.</sub>
+afterLoad       | *function* | *null*        | <sub>Callback function, which will be called after the element was loaded. Has current element as parameter.</sub>
+onError         | *function* | *null*        | <sub>Callback function, which will be called if the element could not be loaded. Has current element as parameter.</sub>
+onFinishedAll   | *function* | *null*        | <sub>Callback function, which will be called after all elements was loaded or returned an error. This callback has no parameter.</sub>
 
 
 ## Bugs / Feature request
