@@ -78,13 +78,13 @@ $ bower install jquery-lazy
 ## Basic Usage
 1.) The basic usage of Lazy ist pretty easy.
 First of all you need to prepare all elements you want to lazy load. 
-Bydefault add a `data-src` attribute to images containing the loadable image and/or a `data-loader` attribute to elements witch shall use [custom loaders](#custom-content-loaders).
+By default add a `data-src` attribute to images containing the loadable image and/or a `data-loader` attribute to elements witch shall use [custom loaders](#custom-content-loaders).
 ```HTML
 <img class="lazy" data-src="path/to/image_to_load.jpg" src="" />
 ```
 
 2.) Start using Lazy by calling it after page load.
-You don't have to specify your elements exactly, but for better performance, or different options, load your images over unique classes or any other jQuery selector. 
+You don't have to specify your elements exactly, but for better performance, or different options, load your elements over unique classes or any other jQuery selector. 
 ```JS
 $(function() {
     $("img.lazy").Lazy();
@@ -121,8 +121,8 @@ There are currently six available:
 instance.config(entryName[, newValue]); // get or set an configuration entry
 instance.addItems(items); // add new items to current instance
 instance.getItems(); // get all unhandled items left of current instance
-instance.update([useThrottle]); // loads all images in current viewport
-instance.loadAll(); // loads all remaining available images from this instance
+instance.update([useThrottle]); // loads all elements in current viewport
+instance.loadAll(); // loads all remaining available elements from this instance
 instance.destroy(); // unbinds all events and stop execution directly
 ```
 
@@ -166,7 +166,7 @@ The following configurations is available by default:
 Name            | Type       | Default       | Description
 --------------- | ---------- | ------------- | -----------
 chainable       | *boolean*  | *true*        | By default Lazy is chainable and will return all elements. If set to `false` Lazy will return the created plugin instance itself for further use.
-autoDestroy     | *boolean*  | *true*        | -
+autoDestroy     | *boolean*  | *true*        | Will automatically destroy the instance when no further elements are available to handle.
 bind            | *string*   | *load*        | If set to `load`' Lazy starts working directly after page load. If you want to use Lazy on own events set it to `event`'.
 threshold       | *integer*  | *500*         | Amount of pixels below the viewport, in which all images gets loaded before the user sees them.
 visibleOnly     | *boolean*  | *false*       | Determine if only visible elements should be load.
@@ -174,22 +174,22 @@ appendScroll    | *integer*  | *window*      | An element to listen on for scrol
 scrollDirection | *string*   | *both*        | Determines the handles scroll direction. Possible values are `both`, `vertical` and `horizontal`.
 defaultImage    | *string*   | *blank image* | Base64 image string, set as default image source for every image without a predefined source attribute.
 placeholder     | *string*   | *null*        | Base64 image string, set a background on every element as loading placeholder.
-delay           | *integer*  | *-1*          | If you want to load all images at once after page load, then you can specify a delay time in milliseconds.
-combined        | *boolean*  | *false*       | With this parameter, Lazy will combine the event driven and delayed image loading.
+delay           | *integer*  | *-1*          | If you want to load all elements at once after page load, then you can specify a delay time in milliseconds.
+combined        | *boolean*  | *false*       | With this parameter, Lazy will combine the event driven and delayed element loading.
 enableQueueing  | *boolean*  | *true*        | The queueing of events and calls is used the optimize the performance of Lazy with other scripts and libraries. It could be disable on side effects or to prioritize Lazy.
-attribute       | *string*   | *data-src*    | ame of the image tag attribute, where the image path is stored.
-retinaAttribute | *string*   | *data-retina* | Name of the image tag attribute, where the image path for optional retina image is stored.
-loaderAttribute | *string*   | *data-loader* | -
-removeAttribute | *boolean*  | *true*        | Determine if the attribute should be removed from the image tag after loading.
-handledName     | *string*   | *handled*     | Name of the image tag data attribute, to determine if image is already handled.
+attribute       | *string*   | *data-src*    | Name of the image tag attribute, where the image path is stored.
+retinaAttribute | *string*   | *data-retina* | Name of the image tag attribute, where the path for optional retina image is stored.
+loaderAttribute | *string*   | *data-loader* | Name or the element attribute, where the identifier of the customer loader is sored.
+removeAttribute | *boolean*  | *true*        | Determine if the attribute should be removed from the element after loading.
+handledName     | *string*   | *handled*     | Name of the element tag data attribute, to determine if element is already handled.
 effect          | *string*   | *show*        | Function name of the effect you want to use to show the loaded images, like `show` or `fadein`.
 effectTime      | *integer*  | *0*           | Time in milliseconds the effect should use to view the image.
 enableThrottle  | *boolean*  | *true*        | Throttle down the loading calls on scrolling event.
 throttle        | *integer*  | *250*         | Time in milliseconds the throttle will use to limit the loading calls.
-beforeLoad      | *function* | *null*        | Callback function, which will be called before the image gets loaded. Has current element as parameter.
-afterLoad       | *function* | *null*        | Callback function, which will be called after the image was loaded. Has current element as parameter.
-onError         | *function* | *null*        | Callback function, which will be called if the image could not be loaded. Has current element as parameter.
-onFinishedAll   | *function* | *null*        | Callback function, which will be called after all images was loaded or returned an error. This callback has no parameter.
+beforeLoad      | *function* | *null*        | Callback function, which will be called before the element gets loaded. Has current element as parameter.
+afterLoad       | *function* | *null*        | Callback function, which will be called after the element was loaded. Has current element as parameter.
+onError         | *function* | *null*        | Callback function, which will be called if the element could not be loaded. Has current element as parameter.
+onFinishedAll   | *function* | *null*        | Callback function, which will be called after all elements was loaded or returned an error. This callback has no parameter.
 
 
 ## Bugs / Feature request
