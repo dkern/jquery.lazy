@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.0.rc6
+ * jQuery Lazy - v0.6.0.rc7
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2015, Daniel 'Eisbehr' Kern
@@ -60,28 +60,7 @@
          * @access private
          * @type {boolean}
          */
-        _isRetinaDisplay = false,
-
-        /**
-         * queue timer
-         * @access private
-         * @type {null|number}
-         */
-        _queueTimer = null,
-
-        /**
-         * array of items in queue
-         * @access private
-         * @type {Array}
-         */
-        _queueItems = [],
-
-        /**
-         * identifies if queue actually contains the lazy magic
-         * @access private
-         * @type {boolean}
-         */
-        _queueContainsMagic = false;
+        _isRetinaDisplay = false;
 
         /**
          * initialize plugin
@@ -104,9 +83,6 @@
             // if no delay is set or combine usage is active bind events
             if( configuration("delay") < 0 || configuration("combined") )
             {
-                // load initial items
-                _lazyLoadItems();
-
                 // create unique event function
                 events.e = _throttle(configuration("throttle"), function(event)
                 {
@@ -114,8 +90,8 @@
                     if( event.type === "resize" )
                         _actualWidth = _actualHeight = -1;
 
-                    // append 'lazy magic' to queue - execute directly on load all
-                    _addToQueue(function() { _lazyLoadItems(event.all); }, instance, !event.all);
+                    // execute 'lazy magic'
+                    _lazyLoadItems(event.all);
                 });
 
                 // create function to add new items to instance
@@ -131,9 +107,54 @@
                     return items;
                 };
 
+                // load initial items
+                _lazyLoadItems();
+
                 // bind lazy load functions to scroll and resize event
                 $(configuration("appendScroll")).on("scroll." + instance.name + " resize." + instance.name, events.e);
             }
+        }
+
+        /**
+         * prepare items before handle them
+         * @access private
+         * @param {Array|object|jQuery} items
+         * @return void
+         */
+        function _prepareItems(items)
+        {
+            // filter items and only add those who not handled yet and got needed attributes available
+            items = $(items).filter(function()
+            {
+                return !$(this).data(configuration("handledName")) && ($(this).attr(configuration("attribute")) || $(this).attr(configuration("loaderAttribute")));
+            })
+
+            // append plugin instance to all elements
+            .data("plugin_" + instance.name, instance);
+
+            // bind error callback to items if set
+            if( configuration("onError") )
+                items.on("error." + instance.name, function()
+                {
+                    _triggerCallback("onError", $(this));
+                });
+
+            // set default image and/or placeholder to elements if set
+            if( configuration("defaultImage") || configuration("placeholder") )
+                for( var i = 0; i < items.length; i++ )
+                {
+                    var element = $(items[i]),
+                        tag = items[i].tagName.toLowerCase(),
+                        propertyName = "background-image";
+
+                    // set default image on every element without source
+                    if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
+                        element.attr("src", configuration("defaultImage"));
+
+                    // set placeholder on every element without background image
+                    else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
+                        element.css(propertyName, "url(" + configuration("placeholder") + ")");
+                }
         }
 
         /**
@@ -171,80 +192,32 @@
                             // is not already handled 
                         if( !element.data(configuration("handledName")) && 
                             // and is visible or visibility doesn't matter
-                            (element.is(":visible") || !configuration("visibleOnly")) && (
-                            // and custom loader is available
-                            (customLoader = element.attr(configuration("loaderAttribute")))  ||
-                            // or image source attribute is available
-                            attribute && (
+                            (!configuration("visibleOnly") || element.is(":visible")) && (
+                            // and image source attribute is available
+                            attribute && ( 
                             // and is image tag where attribute is not equal source
                             (tag == "img" && attribute != element.attr("src")) ||
                             // or is non image tag where attribute is not equal background
-                            (tag != "img" && attribute != element.css("background-image")) )))
+                            (tag != "img" && attribute != element.css("background-image")) ) ||
+                            // or custom loader is available
+                            (customLoader = element.attr(configuration("loaderAttribute"))) ))
                         {
                             // mark element always as handled as this point to prevent double loading
                             loadTriggered = true;
                             element.data(configuration("handledName"), true);
 
-                            // add item to loading queue
-                            _addToQueue(function() { _handleItem(element, tag, customLoader); });
+                            // load item
+                            _handleItem(element, tag, customLoader);
                         }
                     }
                 })(items[i]);
 
             // when something was loaded remove them from remaining items
-            if( loadTriggered ) _addToQueue(function()
-            {
+            if( loadTriggered ) 
                 items = $(items).filter(function()
                 {
                     return !$(this).data(configuration("handledName"));
                 });
-            });
-        }
-
-        /**
-         * prepare items before 
-         * @access private
-         * @param {Array|object|jQuery} items
-         * @return void
-         */
-        function _prepareItems(items)
-        {
-            // filter items and only add those who not handled yet and got needed attributes available
-            items = $(items).filter(function()
-            {
-                return !$(this).data(configuration("handledName")) && ($(this).attr(configuration("attribute")) || $(this).attr(configuration("loaderAttribute")));
-            })
-
-            // append plugin instance to all elements
-            .data("plugin_" + instance.name, instance);
-
-            // late-bind error callback to items if set
-            if( configuration("onError") )
-                for( var i = 0; i < items.length; i++ )
-                    _addToQueue(function()
-                    {
-                        $(this).on("error." + instance.name, function()
-                        {
-                            _triggerCallback("onError", $(this));
-                        });
-                    }, items[i]);
-
-            // set default image and/or placeholder to elements if set
-            if( configuration("defaultImage") || configuration("placeholder") )
-                for( i = 0; i < items.length; i++ )
-                {
-                    var element = $(items[i]),
-                        tag = items[i].tagName.toLowerCase(),
-                        propertyName = "background-image";
-
-                    // set default image on every element without source
-                    if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
-                        element.attr("src", configuration("defaultImage"));
-
-                    // set placeholder on every element without background image
-                    else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
-                        element.css(propertyName, "url(" + configuration("placeholder") + ")");
-                }
         }
 
         /**
@@ -445,64 +418,12 @@
             if( (callback = configuration(callback)) )
             {
                 args = $(arguments).slice(1);
-                _addToQueue(function() { callback.apply(instance, args); });
+                callback.apply(instance, args);
 
                 return true;
             }
 
             return false;
-        }
-
-        /**
-         * add new function to queue for execution
-         * @access private
-         * @param {function} [callable]
-         * @param {object} [context]
-         * @param {boolean} [isLazyMagic]
-         * @return void
-         */
-        function _addToQueue(callable, context, isLazyMagic)
-        {
-            if( callable )
-            {
-                // execute directly when queue is disabled and stop queuing
-                if( !configuration("enableQueueing") )
-                {
-                    callable.call(context || window);
-                    return;
-                }
-
-                // let the lazy magic only be once in queue
-                if( !isLazyMagic || !_queueContainsMagic )
-                {
-                    _queueItems.push([callable, context, isLazyMagic]);
-                    if( isLazyMagic ) _queueContainsMagic = true;
-                }
-
-                // start queue execution directly on first item
-                if( _queueItems.length == 1 ) _setQueueTimer();
-                return;
-            }
-
-            if( (callable = _queueItems.shift()) )
-            {
-                if( callable[2] ) _queueContainsMagic = false;
-                callable[0].call(callable[1] || window);
-            }
-        }
-
-        /**
-         * set next timer for queue execution
-         * @access private
-         * @return void
-         */
-        function _setQueueTimer()
-        {
-            _queueTimer = setTimeout(function()
-            {
-                _addToQueue();
-                if( _queueItems.length ) _setQueueTimer();
-            }, 2);
         }
 
         // set up lazy
@@ -675,7 +596,6 @@
             scrollDirection : "both",
             defaultImage    : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
             placeholder     : null,
-            enableQueueing  : true,
 
             // delay
             delay           : -1,
