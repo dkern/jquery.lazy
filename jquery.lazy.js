@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.0.rc8
+ * jQuery Lazy - v0.6.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2015, Daniel 'Eisbehr' Kern
