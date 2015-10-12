@@ -176,7 +176,6 @@ defaultImage    | *string*   | *blank image* | <sub>Base64 image string, set as 
 placeholder     | *string*   | *null*        | <sub>Base64 image string, set a background on every element as loading placeholder.</sub>
 delay           | *integer*  | *-1*          | <sub>If you want to load all elements at once after page load, then you can specify a delay time in milliseconds.</sub>
 combined        | *boolean*  | *false*       | <sub>With this parameter, Lazy will combine the event driven and delayed element loading.</sub>
-enableQueueing  | *boolean*  | *true*        | <sub>The queueing of events and calls is used the optimize the performance of Lazy with other scripts and libraries. It could be disable on side effects or to prioritize Lazy.</sub>
 **attributes**  |            |               |
 attribute       | *string*   | *data-src*    | <sub>Name of the image tag attribute, where the image path is stored.</sub>
 retinaAttribute | *string*   | *data-retina* | <sub>Name of the image tag attribute, where the path for optional retina image is stored.</sub>

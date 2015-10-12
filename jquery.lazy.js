@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.0.rc7
+ * jQuery Lazy - v0.6.0.rc8
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2015, Daniel 'Eisbehr' Kern
@@ -8,7 +8,7 @@
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl-2.0.html
  *
- * $("img.lazy").Lazy();
+ * $("img.lazy").lazy();
  */
 
 ;(function($, window, document, undefined)
@@ -139,7 +139,7 @@
                     _triggerCallback("onError", $(this));
                 });
 
-            // set default image and/or placeholder to elements if set
+            // set default image and/or placeholder to elements if configured
             if( configuration("defaultImage") || configuration("placeholder") )
                 for( var i = 0; i < items.length; i++ )
                 {
@@ -182,6 +182,7 @@
             for( var i = 0; i < items.length; i++ )
                 (function(item)
                 {
+                    // item is at least in loadable area
                     if( _isInLoadableArea(item) || allItems )
                     {
                         var element = $(item),
@@ -259,10 +260,7 @@
                     // call after load event
                     _triggerCallback("afterLoad", element);
 
-                    // unbind error event and remove image object
-                    element.off("error");
-
-                    // remove item from waiting cue and possible trigger finished event
+                    // remove item from waiting queue and possible trigger finished event
                     _reduceAwaiting();
                 });
 
@@ -281,7 +279,7 @@
                 var imageObj = $(new Image());
 
                 // bind error event to trigger callback and reduce waiting amount
-                imageObj.error(errorCallback);
+                imageObj.one("error", errorCallback);
 
                 // bind after load callback to image
                 imageObj.one("load", function()
@@ -303,10 +301,10 @@
                     // call after load event
                     _triggerCallback("afterLoad", element);
 
-                    // unbind error event and remove image object
-                    imageObj.off("error").remove();
+                    // cleanup image object
+                    imageObj.remove();
 
-                    // remove item from waiting cue and possible trigger finished event
+                    // remove item from waiting queue and possible trigger finished event
                     _reduceAwaiting();
                 });
 
@@ -402,7 +400,7 @@
             --_awaitingAfterLoad;
 
             // if no items were left trigger finished event
-            if( !items.size() && !_awaitingAfterLoad ) _triggerCallback("onFinishedAll", null);
+            if( !items.size() && !_awaitingAfterLoad ) _triggerCallback("onFinishedAll");
         }
 
         /**
@@ -417,9 +415,7 @@
         {
             if( (callback = configuration(callback)) )
             {
-                args = $(arguments).slice(1);
-                callback.apply(instance, args);
-
+                callback.apply(instance, $(arguments).slice(1));
                 return true;
             }
 
