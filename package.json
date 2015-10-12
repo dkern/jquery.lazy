@@ -1,8 +1,8 @@
 {
     "name": "jquery-lazy",
-    "title": "jQuery Lazy - Delayed Image and Background Loader",
-    "version": "0.5.4",
-    "description": "Lazy is a fast and lightweight delayed image and background loading plugin for jQuery. It is designed to speed up page loading times and decrease traffic to your users and customers by only loading the content in view.",
+    "title": "jQuery Lazy - Delayed Content, Image and Background Loader",
+    "version": "0.6.0",
+    "description": "Lazy is a fast, feature-rich and lightweight delayed content loading plugin for jQuery. It's designed to speed up page loading times and decrease traffic to your users by only loading the content in view.",
     "homepage": "http://jquery.eisbehr.de/lazy/",
     "author":
     {
@@ -25,15 +25,16 @@
         "image",
         "images",
         "background",
+        "content",
         "speed",
         "delay",
         "delayed",
         "pageload",
         "performance",
-        "jquery",
-        "jquery-plugin",
         "retina",
-        "placeholder"
+        "placeholder",
+        "jquery",
+        "jquery-plugin"
     ],
     "licenses":
     [
