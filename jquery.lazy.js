@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.1
+ * jQuery Lazy - v0.6.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2015, Daniel 'Eisbehr' Kern
@@ -170,13 +170,17 @@
             {
                 // destroy instance if option is enabled
                 if( configuration("autoDestroy") )
+                    // noinspection JSUnresolvedFunction
                     instance.destroy();
 
                 return;
             }
 
             // helper to see if something was changed
-            var loadTriggered = false;
+            var loadTriggered = false,
+
+            // get image base once, not on every image loop
+            imageBase = configuration("imageBase") ? configuration("imageBase") : "";
 
             // loop all available items
             for( var i = 0; i < items.length; i++ )
@@ -187,7 +191,7 @@
                     {
                         var element = $(item),
                             tag = item.tagName.toLowerCase(),
-                            attribute = element.attr(configuration("attribute")),
+                            attribute = imageBase + element.attr(configuration("attribute")),
                             customLoader;
 
                             // is not already handled 
@@ -208,7 +212,7 @@
                             element.data(configuration("handledName"), true);
 
                             // load item
-                            _handleItem(element, tag, customLoader);
+                            _handleItem(element, tag, imageBase, customLoader);
                         }
                     }
                 })(items[i]);
@@ -226,10 +230,11 @@
          * @access private
          * @param {object} element
          * @param {string} tag
+         * @param {string} imageBase
          * @param {function} [customLoader]
          * @return void
          */
-        function _handleItem(element, tag, customLoader)
+        function _handleItem(element, tag, imageBase, customLoader)
         {
             // increment count of items waiting for after load
             ++_awaitingAfterLoad;
@@ -309,7 +314,7 @@
                 });
 
                 // set source
-                imageObj.attr("src", element.attr(configuration(_isRetinaDisplay && element.attr(configuration("retinaAttribute")) ? "retinaAttribute" : "attribute")));
+                imageObj.attr("src", imageBase + element.attr(configuration(_isRetinaDisplay && element.attr(configuration("retinaAttribute")) ? "retinaAttribute" : "attribute")));
 
                 // call after load even on cached image
                 if( imageObj.complete ) imageObj.load();
@@ -554,6 +559,7 @@
         _instance.destroy = function ()
         {
             // unbind instance generated events
+            // noinspection JSUnresolvedFunction
             $(_instance.config("appendScroll")).off("." + _instance.name, _events.e);
 
             // clear events
@@ -561,7 +567,9 @@
         };
 
         // start using lazy and return all elements to be chainable or instance for further use
+        // noinspection JSUnresolvedVariable
         _executeLazy(_instance, _instance.config, elements, _events);
+        // noinspection JSUnresolvedFunction
         return _instance.config("chainable") ? elements : _instance;
     }
 
@@ -590,10 +598,9 @@
             visibleOnly     : false,
             appendScroll    : window,
             scrollDirection : "both",
+            imageBase       : null,
             defaultImage    : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
             placeholder     : null,
-
-            // delay
             delay           : -1,
             combined        : false,
 

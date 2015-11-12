@@ -53,10 +53,10 @@ First of all, you will need a copy of [jQuery](http://jquery.com) to use Lazy su
 Lazy is available over [cdnjs](http://cdnjs.com) and [jsDelivr](http://jsdelivr.com) CDN and can directly included to every page.
 ```HTML
 <!-- cdnjs -->
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/0.6.1/jquery.lazy.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/0.6.2/jquery.lazy.min.js"></script>
 
 <!-- jsDeliver -->
-<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/0.6.1/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/0.6.2/jquery.lazy.min.js"></script>
 ```
 
 #### Self-Hosted
@@ -172,6 +172,7 @@ threshold       | *integer*  | *500*         | <sub>Amount of pixels below the v
 visibleOnly     | *boolean*  | *false*       | <sub>Determine if only visible elements should be load.</sub>
 appendScroll    | *integer*  | *window*      | <sub>An element to listen on for scroll events, useful when images are stored in a container.</sub>
 scrollDirection | *string*   | *both*        | <sub>Determines the handles scroll direction. Possible values are `both`, `vertical` and `horizontal`.</sub>
+imageBase       | *string*   | *null*        | <sub>If defined this will be used as base path for all images loaded by this instance.</sub>
 defaultImage    | *string*   | *blank image* | <sub>Base64 image string, set as default image source for every image without a predefined source attribute.</sub>
 placeholder     | *string*   | *null*        | <sub>Base64 image string, set a background on every element as loading placeholder.</sub>
 delay           | *integer*  | *-1*          | <sub>If you want to load all elements at once after page load, then you can specify a delay time in milliseconds.</sub>
