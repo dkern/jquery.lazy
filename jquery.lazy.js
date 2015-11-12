@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.2
+ * jQuery Lazy - v0.6.3
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2015, Daniel 'Eisbehr' Kern
@@ -191,7 +191,7 @@
                     {
                         var element = $(item),
                             tag = item.tagName.toLowerCase(),
-                            attribute = imageBase + element.attr(configuration("attribute")),
+                            attribute = element.attr(configuration("attribute")),
                             customLoader;
 
                             // is not already handled 
@@ -201,9 +201,9 @@
                             // and image source attribute is available
                             attribute && ( 
                             // and is image tag where attribute is not equal source
-                            (tag == "img" && attribute != element.attr("src")) ||
+                            (tag == "img" && imageBase + attribute != element.attr("src")) ||
                             // or is non image tag where attribute is not equal background
-                            (tag != "img" && attribute != element.css("background-image")) ) ||
+                            (tag != "img" && imageBase + attribute != element.css("background-image")) ) ||
                             // or custom loader is available
                             (customLoader = element.attr(configuration("loaderAttribute"))) ))
                         {
