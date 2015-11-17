@@ -420,7 +420,7 @@
         {
             if( (callback = configuration(callback)) )
             {
-                callback.apply(instance, $(arguments).slice(1));
+                callback.apply(instance, Array.prototype.slice.call(arguments, 1));
                 return true;
             }
 
