@@ -53,10 +53,10 @@ First of all, you will need a copy of [jQuery](http://jquery.com) to use Lazy su
 Lazy is available over [cdnjs](http://cdnjs.com) and [jsDelivr](http://jsdelivr.com) CDN and can directly included to every page.
 ```HTML
 <!-- cdnjs -->
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/0.6.3/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/0.6.4/jquery.lazy.min.js"></script>
 
 <!-- jsDeliver -->
-<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/0.6.3/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/0.6.4/jquery.lazy.min.js"></script>
 ```
 
 #### Self-Hosted

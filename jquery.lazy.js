@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v0.6.3
+ * jQuery Lazy - v0.6.4
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2015, Daniel 'Eisbehr' Kern
@@ -132,13 +132,6 @@
             // append plugin instance to all elements
             .data("plugin_" + instance.name, instance);
 
-            // bind error callback to items if set
-            if( configuration("onError") )
-                items.on("error." + instance.name, function()
-                {
-                    _triggerCallback("onError", $(this));
-                });
-
             // set default image and/or placeholder to elements if configured
             if( configuration("defaultImage") || configuration("placeholder") )
                 for( var i = 0; i < items.length; i++ )
@@ -195,11 +188,11 @@
                             customLoader;
 
                             // is not already handled 
-                        if( !element.data(configuration("handledName")) && 
+                        if( !element.data(configuration("handledName")) &&
                             // and is visible or visibility doesn't matter
                             (!configuration("visibleOnly") || element.is(":visible")) && (
                             // and image source attribute is available
-                            attribute && ( 
+                            attribute && (
                             // and is image tag where attribute is not equal source
                             (tag == "img" && imageBase + attribute != element.attr("src")) ||
                             // or is non image tag where attribute is not equal background
@@ -218,7 +211,7 @@
                 })(items[i]);
 
             // when something was loaded remove them from remaining items
-            if( loadTriggered ) 
+            if( loadTriggered )
                 items = $(items).filter(function()
                 {
                     return !$(this).data(configuration("handledName"));
@@ -420,7 +413,9 @@
         {
             if( (callback = configuration(callback)) )
             {
-                callback.apply(instance, Array.prototype.slice.call(arguments, 1));
+                // jQuery's internal '$(arguments).slice(1)' are causing problems at least on old iPads
+                // below is shorthand of 'Array.prototype.slice.call(arguments, 1)'
+                callback.apply(instance, [].slice.call(arguments, 1));
                 return true;
             }
 
@@ -554,7 +549,7 @@
          * destroy this plugin instance
          * @access public
          * @type {function}
-         * @return void
+         * @return undefined
          */
         _instance.destroy = function ()
         {
@@ -564,6 +559,8 @@
 
             // clear events
             _events = {};
+
+            return undefined;
         };
 
         // start using lazy and return all elements to be chainable or instance for further use
