@@ -1,7 +1,7 @@
 {
   "name": "jquery-lazy",
   "description": "Lazy is a fast, feature-rich and lightweight delayed content loading plugin for jQuery. It's designed to speed up page loading times and decrease traffic to your users by only loading the content in view. You can use Lazy in all vertical and horizontal scroll ways. It supports images in 'img' tags and backgrounds, supplied with css like 'background-image', by default or any other content by custom loaders. On images Lazy can set an default image or a placeholder while loading and supports retina displays as well.",
-  "version": "0.6.4",
+  "version": "1.6.5",
   "main": "jquery.lazy.min.js",
   "license": [
     "MIT",
