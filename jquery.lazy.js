@@ -287,7 +287,7 @@
 
                     // set image back to element
                     if( tag == "img" ) element.attr("src", imageObj.attr("src"));
-                    else element.css("background-image", "url(" + imageObj.attr("src") + ")");
+                    else element.css("background-image", "url('" + imageObj.attr("src") + "')");
 
                     // bring it back with some effect!
                     element[configuration("effect")](configuration("effectTime"));
