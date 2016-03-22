@@ -53,10 +53,10 @@ First of all, you will need a copy of [jQuery](http://jquery.com) to use Lazy su
 Lazy is available over [cdnjs](http://cdnjs.com) and [jsDelivr](http://jsdelivr.com) CDN and can directly included to every page.
 ```HTML
 <!-- cdnjs -->
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.6.5/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.6.6/jquery.lazy.min.js"></script>
 
 <!-- jsDeliver -->
-<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/1.6.5/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/1.6.6/jquery.lazy.min.js"></script>
 ```
 
 #### Self-Hosted
@@ -183,6 +183,7 @@ retinaAttribute | *string*   | *data-retina* | Name of the image tag attribute, 
 loaderAttribute | *string*   | *data-loader* | Name or the element attribute, where the identifier of the customer loader is sored.
 removeAttribute | *boolean*  | *true*        | Determine if the attribute should be removed from the element after loading.
 handledName     | *string*   | *handled*     | Name of the element tag data attribute, to determine if element is already handled.
+loadedName      | *string*   | *loaded*      | Name of the element tag data attribute, to determine if element is already loaded.
 **effect**      |            |               |
 effect          | *string*   | *show*        | Function name of the effect you want to use to show the loaded images, like `show` or `fadein`.
 effectTime      | *integer*  | *0*           | Time in milliseconds the effect should use to view the image.

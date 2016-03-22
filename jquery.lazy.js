@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v1.6.5
+ * jQuery Lazy - v1.6.6
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -11,13 +11,11 @@
  * $("img.lazy").lazy();
  */
 
-;(function($, window, document, undefined)
-{
+;(function($, window, document, undefined) {
     "use strict";
 
     // make lazy a bit more case-insensitive :)
-    $.fn.Lazy = $.fn.lazy = function(settings)
-    {
+    $.fn.Lazy = $.fn.lazy = function(settings) {
         return new LazyPlugin(this, settings);
     };
 
@@ -32,8 +30,7 @@
      * @param {object} events
      * @return void
      */
-    function _executeLazy(instance, configuration, items, events)
-    {
+    function _executeLazy(instance, configuration, items, events) {
         /**
          * a helper to trigger the 'onFinishedAll' callback after all other events
          * @access private
@@ -68,8 +65,7 @@
          * @access private
          * @return void
          */
-        function _initialize()
-        {
+        function _initialize() {
             // detect actual device pixel ratio
             // noinspection JSUnresolvedVariable
             _isRetinaDisplay = window.devicePixelRatio > 1;
@@ -81,11 +77,9 @@
             if( configuration("delay") >= 0 ) setTimeout(function() { _lazyLoadItems(true); }, configuration("delay"));
 
             // if no delay is set or combine usage is active bind events
-            if( configuration("delay") < 0 || configuration("combined") )
-            {
+            if( configuration("delay") < 0 || configuration("combined") ) {
                 // create unique event function
-                events.e = _throttle(configuration("throttle"), function(event)
-                {
+                events.e = _throttle(configuration("throttle"), function(event) {
                     // reset detected window size on resize event
                     if( event.type === "resize" )
                         _actualWidth = _actualHeight = -1;
@@ -95,16 +89,17 @@
                 });
 
                 // create function to add new items to instance
-                events.a = function(additionalItems)
-                {
+                events.a = function(additionalItems) {
                     _prepareItems(additionalItems);
                     items.push.apply(items, additionalItems);
                 };
 
                 // create function to get all instance items left
-                events.g = function()
-                {
-                    return items;
+                events.g = function() {
+                    // filter loaded items before return in case internal filter was not running until now
+                    return (items = $(items).filter(function() {
+                        return !$(this).data(configuration("loadedName"));
+                    }));
                 };
 
                 // load initial items
@@ -121,11 +116,9 @@
          * @param {Array|object|jQuery} items
          * @return void
          */
-        function _prepareItems(items)
-        {
+        function _prepareItems(items) {
             // filter items and only add those who not handled yet and got needed attributes available
-            items = $(items).filter(function()
-            {
+            items = $(items).filter(function() {
                 return !$(this).data(configuration("handledName")) && ($(this).attr(configuration("attribute")) || $(this).attr(configuration("loaderAttribute")));
             })
 
@@ -134,8 +127,7 @@
 
             // set default image and/or placeholder to elements if configured
             if( configuration("defaultImage") || configuration("placeholder") )
-                for( var i = 0; i < items.length; i++ )
-                {
+                for( var i = 0; i < items.length; i++ ) {
                     var element = $(items[i]),
                         tag = items[i].tagName.toLowerCase(),
                         propertyName = "background-image";
@@ -156,11 +148,9 @@
          * @param {boolean} [allItems]
          * @return void
          */
-        function _lazyLoadItems(allItems)
-        {
+        function _lazyLoadItems(allItems) {
             // skip if no items where left
-            if( !items.length )
-            {
+            if( !items.length ) {
                 // destroy instance if option is enabled
                 if( configuration("autoDestroy") )
                     // noinspection JSUnresolvedFunction
@@ -177,11 +167,9 @@
 
             // loop all available items
             for( var i = 0; i < items.length; i++ )
-                (function(item)
-                {
+                (function(item) {
                     // item is at least in loadable area
-                    if( _isInLoadableArea(item) || allItems )
-                    {
+                    if( _isInLoadableArea(item) || allItems ) {
                         var element = $(item),
                             tag = item.tagName.toLowerCase(),
                             attribute = element.attr(configuration("attribute")),
@@ -200,7 +188,7 @@
                             // or custom loader is available
                             (customLoader = element.attr(configuration("loaderAttribute"))) ))
                         {
-                            // mark element always as handled as this point to prevent double loading
+                            // mark element always as handled as this point to prevent double handling
                             loadTriggered = true;
                             element.data(configuration("handledName"), true);
 
@@ -212,9 +200,8 @@
 
             // when something was loaded remove them from remaining items
             if( loadTriggered )
-                items = $(items).filter(function()
-                {
-                    return !$(this).data(configuration("handledName"));
+                items = $(items).filter(function() {
+                    return !$(this).data(configuration("loadedName"));
                 });
         }
 
@@ -227,14 +214,12 @@
          * @param {function} [customLoader]
          * @return void
          */
-        function _handleItem(element, tag, imageBase, customLoader)
-        {
+        function _handleItem(element, tag, imageBase, customLoader) {
             // increment count of items waiting for after load
             ++_awaitingAfterLoad;
 
             // extended error callback for correct 'onFinishedAll' handling
-            var errorCallback = function()
-            {
+            var errorCallback = function() {
                 _triggerCallback("onError", element);
                 _reduceAwaiting();
             };
@@ -243,17 +228,18 @@
             _triggerCallback("beforeLoad", element);
 
             // handle custom loader
-            if( customLoader )
-            {
+            if( customLoader ) {
                 // bind error event to trigger callback and reduce waiting amount
                 element.off("error").one("error", errorCallback);
 
                 // bind after load callback to image
-                element.one("load", function()
-                {
+                element.one("load", function() {
                     // remove attribute from element
                     if( configuration("removeAttribute") )
                         element.removeAttr(configuration("loaderAttribute"));
+
+                    // mark element as loaded
+                    element.data(configuration("loadedName"), true);
 
                     // call after load event
                     _triggerCallback("afterLoad", element);
@@ -263,16 +249,14 @@
                 });
 
                 // trigger custom loader
-                if( !_triggerCallback(customLoader, element, function(response)
-                {
+                if( !_triggerCallback(customLoader, element, function(response) {
                     if( response ) element.load();
                     else element.error();
                 })) element.error();
             }
 
             // handle images
-            else
-            {
+            else {
                 // create image object
                 var imageObj = $(new Image());
 
@@ -280,8 +264,7 @@
                 imageObj.one("error", errorCallback);
 
                 // bind after load callback to image
-                imageObj.one("load", function()
-                {
+                imageObj.one("load", function() {
                     // remove element from view
                     element.hide();
 
@@ -295,6 +278,9 @@
                     // remove attribute from element
                     if( configuration("removeAttribute") )
                         element.removeAttr(configuration("attribute") + " " + configuration("retinaAttribute"));
+
+                    // mark element as loaded
+                    element.data(configuration("loadedName"), true);
 
                     // call after load event
                     _triggerCallback("afterLoad", element);
@@ -320,8 +306,7 @@
          * @param {object} element
          * @return {boolean}
          */
-        function _isInLoadableArea(element)
-        {
+        function _isInLoadableArea(element) {
             var elementBound = element.getBoundingClientRect(),
                 direction    = configuration("scrollDirection"),
                 threshold    = configuration("threshold"),
@@ -333,7 +318,7 @@
                                ((_getActualWidth() + threshold) > elementBound.left) &&
                                // check if element is even in loadable area from right
                                (-threshold < elementBound.right);
-
+ 
             if( direction == "vertical" ) return vertical;
             else if( direction == "horizontal" ) return horizontal;
 
@@ -345,8 +330,7 @@
          * @access private
          * @return {number}
          */
-        function _getActualWidth()
-        {
+        function _getActualWidth() {
             return _actualWidth >= 0 ? _actualWidth : (_actualWidth = $(window).width());
         }
 
@@ -355,8 +339,7 @@
          * @access private
          * @return {number}
          */
-        function _getActualHeight()
-        {
+        function _getActualHeight() {
             return _actualHeight >= 0 ? _actualHeight : (_actualHeight = $(window).height());
         }
 
@@ -367,16 +350,13 @@
          * @param {function} callback
          * @return {function}
          */
-        function _throttle(delay, callback)
-        {
+        function _throttle(delay, callback) {
             var timeout, lastExecute = 0;
 
-            return function(event, ignoreThrottle)
-            {
+            return function(event, ignoreThrottle) {
                 var elapsed = +new Date() - lastExecute;
 
-                function run()
-                {
+                function run() {
                     lastExecute = +new Date();
                     callback.call(instance, event);
                 }
@@ -393,8 +373,7 @@
          * @access private
          * @return void
          */
-        function _reduceAwaiting()
-        {
+        function _reduceAwaiting() {
             --_awaitingAfterLoad;
 
             // if no items were left trigger finished event
@@ -409,10 +388,8 @@
          * @param {*} [args]
          * @return {boolean}
          */
-        function _triggerCallback(callback, element, args)
-        {
-            if( (callback = configuration(callback)) )
-            {
+        function _triggerCallback(callback, element, args) {
+            if( (callback = configuration(callback)) ) {
                 // jQuery's internal '$(arguments).slice(1)' are causing problems at least on old iPads
                 // below is shorthand of 'Array.prototype.slice.call(arguments, 1)'
                 callback.apply(instance, [].slice.call(arguments, 1));
@@ -423,13 +400,12 @@
         }
 
         // set up lazy
-        (function()
-        {
+        (function() {
             // if event driven don't wait for page loading
             if( configuration("bind") == "event" ) _initialize();
 
             // otherwise load initial items and start lazy after page load
-            else $(window).load(_initialize);
+            else $(window).on("load." + instance.name, _initialize);
         })();
     }
 
@@ -441,8 +417,7 @@
      * @param {object} settings
      * @return {object|LazyPlugin}
      */
-    function LazyPlugin(elements, settings)
-    {
+    function LazyPlugin(elements, settings) {
         /**
          * this lazy plugin instance
          * @access private
@@ -475,8 +450,7 @@
          * @param {*} [value]
          * @return {LazyPlugin|*}
          */
-        _instance.config = function(entryName, value)
-        {
+        _instance.config = function(entryName, value) {
             if( value === undefined )
                 return _config[entryName];
             else
@@ -492,8 +466,7 @@
          * @param {Array|object|string} items
          * @return {LazyPlugin}
          */
-        _instance.addItems = function(items)
-        {
+        _instance.addItems = function(items) {
             if( _events.a )
                 _events.a($.type(items) === "string" ? $(items) : items);
 
@@ -506,8 +479,7 @@
          * @access public
          * @returns {object}
          */
-        _instance.getItems = function()
-        {
+        _instance.getItems = function() {
             return _events.g ? _events.g() : {};
         };
 
@@ -520,8 +492,7 @@
          * @param {boolean} [useThrottle]
          * @return {LazyPlugin}
          */
-        _instance.update = function(useThrottle)
-        {
+        _instance.update = function(useThrottle) {
             if( _events.e )
                 _events.e({}, !useThrottle);
 
@@ -536,8 +507,7 @@
          * @type {function}
          * @return {LazyPlugin}
          */
-        _instance.loadAll = function()
-        {
+        _instance.loadAll = function() {
             if( _events.e )
                 _events.e({all: true}, true);
 
@@ -551,11 +521,11 @@
          * @type {function}
          * @return undefined
          */
-        _instance.destroy = function ()
-        {
+        _instance.destroy = function () {
             // unbind instance generated events
             // noinspection JSUnresolvedFunction
             $(_instance.config("appendScroll")).off("." + _instance.name, _events.e);
+            $(window).off("." + _instance.name);
 
             // clear events
             _events = {};
@@ -571,8 +541,7 @@
     }
 
     // use jquery to extend class prototype without conflicts
-    $.extend(LazyPlugin.prototype,
-    {
+    $.extend(LazyPlugin.prototype, {
         /**
          * internal name used for bindings and namespaces
          * @access public
@@ -585,8 +554,7 @@
          * @access public
          * @type {object}
          */
-        configuration:
-        {
+        configuration: {
             // general
             chainable       : true,
             autoDestroy     : true,
@@ -607,6 +575,7 @@
             loaderAttribute : "data-loader",
             removeAttribute : true,
             handledName     : "handled",
+            loadedName      : "loaded",
 
             // effect
             effect          : "show",
