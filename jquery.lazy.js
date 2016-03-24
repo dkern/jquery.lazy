@@ -244,7 +244,7 @@
                     // call after load event
                     _triggerCallback("afterLoad", element);
 
-                    // remove item from waiting queue and possible trigger finished event
+                    // remove item from waiting queue and possibly trigger finished event
                     _reduceAwaiting();
                 });
 
@@ -288,7 +288,7 @@
                     // cleanup image object
                     imageObj.remove();
 
-                    // remove item from waiting queue and possible trigger finished event
+                    // remove item from waiting queue and possibly trigger finished event
                     _reduceAwaiting();
                 });
 
