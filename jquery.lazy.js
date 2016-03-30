@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v1.6.6
+ * jQuery Lazy - v1.6.7
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -26,7 +26,7 @@
      * @type {function}
      * @param {LazyPlugin} instance
      * @param {function} configuration
-     * @param {object} items
+     * @param {object|Array} items
      * @param {object} events
      * @return void
      */
@@ -53,7 +53,7 @@
         _actualHeight = -1,
 
         /**
-         * determine possible detected high pixel density
+         * determine possibly detected high pixel density
          * @access private
          * @type {boolean}
          */
@@ -201,7 +201,7 @@
             // when something was loaded remove them from remaining items
             if( loadTriggered )
                 items = $(items).filter(function() {
-                    return !$(this).data(configuration("loadedName"));
+                    return !$(this).data(configuration("handledName"));
                 });
         }
 
@@ -377,7 +377,7 @@
             --_awaitingAfterLoad;
 
             // if no items were left trigger finished event
-            if( !items.size() && !_awaitingAfterLoad ) _triggerCallback("onFinishedAll");
+            if( !items.length && !_awaitingAfterLoad ) _triggerCallback("onFinishedAll");
         }
 
         /**
