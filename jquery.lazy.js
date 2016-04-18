@@ -119,7 +119,8 @@
         function _prepareItems(items) {
             // filter items and only add those who not handled yet and got needed attributes available
             items = $(items).filter(function() {
-                return !$(this).data(configuration("handledName")) && ($(this).attr(configuration("attribute")) || $(this).attr(configuration("loaderAttribute")));
+                var element = $(this);
+                return !element.data(configuration("handledName")) && (element.attr(configuration("attribute")) || element.attr(configuration("srcsetAttribute")) || element.attr(configuration("loaderAttribute")));
             })
 
             // append plugin instance to all elements
@@ -127,10 +128,14 @@
 
             // set default image and/or placeholder to elements if configured
             if( configuration("defaultImage") || configuration("placeholder") )
-                for( var i = 0; i < items.length; i++ ) {
+                for( var i = 0, l = items.length; i < l; i++ ) {
                     var element = $(items[i]),
                         tag = items[i].tagName.toLowerCase(),
                         propertyName = "background-image";
+
+                    // generate and update source set if an image base is set
+                    if( tag == "img" && configuration("imageBase") && element.attr(configuration("srcsetAttribute")) )
+                        element.attr(configuration("srcsetAttribute"), _getSrcSet(element.attr(configuration("srcsetAttribute"))));
 
                     // set default image on every element without source
                     if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
@@ -166,7 +171,7 @@
             imageBase = configuration("imageBase") ? configuration("imageBase") : "";
 
             // loop all available items
-            for( var i = 0; i < items.length; i++ )
+            for( var i = 0, l = items.length; i < l; i++ )
                 (function(item) {
                     // item is at least in loadable area
                     if( _isInLoadableArea(item) || allItems ) {
@@ -179,12 +184,13 @@
                         if( !element.data(configuration("handledName")) &&
                             // and is visible or visibility doesn't matter
                             (!configuration("visibleOnly") || element.is(":visible")) && (
-                            // and image source attribute is available
-                            attribute && (
-                            // and is image tag where attribute is not equal source
-                            (tag == "img" && imageBase + attribute != element.attr("src")) ||
-                            // or is non image tag where attribute is not equal background
-                            (tag != "img" && imageBase + attribute != element.css("background-image")) ) ||
+                            // and image source or source set attribute is available
+                            (attribute || element.attr(configuration("srcsetAttribute"))) && (
+                                // and is image tag where attribute is not equal source or source set
+                                (tag == "img" && (imageBase + attribute != element.attr("src") || element.attr(configuration("srcsetAttribute")) != element.attr("srcset"))) ||
+                                // or is non image tag where attribute is not equal background
+                                (tag != "img" && imageBase + attribute != element.css("background-image")) 
+                            ) ||
                             // or custom loader is available
                             (customLoader = element.attr(configuration("loaderAttribute"))) ))
                         {
@@ -227,6 +233,12 @@
             // trigger function before loading image
             _triggerCallback("beforeLoad", element);
 
+            // fetch all attributes here for better code minimization
+            var attribute = configuration("attribute"),
+                srcsetAttribute = configuration("srcsetAttribute"),
+                sizesAttribute = configuration("sizesAttribute"),
+                retinaAttribute = configuration("retinaAttribute");
+
             // handle custom loader
             if( customLoader ) {
                 // bind error event to trigger callback and reduce waiting amount
@@ -268,16 +280,25 @@
                     // remove element from view
                     element.hide();
 
-                    // set image back to element
-                    if( tag == "img" ) element.attr("src", imageObj.attr("src"));
-                    else element.css("background-image", "url('" + imageObj.attr("src") + "')");
+                    // set image back to element - do it as single 'attr' calls, to be sure 'src' is set after 'srcset'
+                    if( tag == "img" )
+                        element.attr("sizes", imageObj.attr("sizes"))
+                               .attr("srcset", imageObj.attr("srcset"))
+                               .attr("src", imageObj.attr("src"));
+                    else
+                        element.css("background-image", "url('" + imageObj.attr("src") + "')");
 
                     // bring it back with some effect!
                     element[configuration("effect")](configuration("effectTime"));
 
                     // remove attribute from element
-                    if( configuration("removeAttribute") )
-                        element.removeAttr(configuration("attribute") + " " + configuration("retinaAttribute"));
+                    if( configuration("removeAttribute") ) {
+                        element.removeAttr(attribute + " " + srcsetAttribute + " " + retinaAttribute);
+
+                        // only remove 'sizes' attribute, if it was a custom one
+                        if( sizesAttribute !== "sizes" )
+                            element.removeAttr(sizesAttribute);
+                    }
 
                     // mark element as loaded
                     element.data(configuration("loadedName"), true);
@@ -292,8 +313,10 @@
                     _reduceAwaiting();
                 });
 
-                // set source
-                imageObj.attr("src", imageBase + element.attr(configuration(_isRetinaDisplay && element.attr(configuration("retinaAttribute")) ? "retinaAttribute" : "attribute")));
+                // set sources - do it as single 'attr' calls, to be sure 'src' is set after 'srcset'
+                imageObj.attr("sizes", element.attr(sizesAttribute))
+                        .attr("srcset", element.attr(srcsetAttribute))
+                        .attr("src", imageBase + element.attr(_isRetinaDisplay && element.attr(retinaAttribute) ? retinaAttribute : attribute));
 
                 // call after load even on cached image
                 if( imageObj.complete ) imageObj.load();
@@ -318,7 +341,7 @@
                                ((_getActualWidth() + threshold) > elementBound.left) &&
                                // check if element is even in loadable area from right
                                (-threshold < elementBound.right);
- 
+
             if( direction == "vertical" ) return vertical;
             else if( direction == "horizontal" ) return horizontal;
 
@@ -341,6 +364,28 @@
          */
         function _getActualHeight() {
             return _actualHeight >= 0 ? _actualHeight : (_actualHeight = $(window).height());
+        }
+
+        /**
+         * prepend image base to all srcset entries
+         * @access private
+         * @param {string} srcset
+         * @returns {string}
+         */
+        function _getSrcSet(srcset) {
+            var imageBase = configuration("imageBase");
+
+            if( imageBase ) {
+                // trim, remove unnecessary spaces and split entries
+                var entries = srcset.trim().replace(/\s*,\s*/g, ',').split(',');
+
+                for( var i = 0, l = entries.length; i < l; i++ )
+                    entries[i] = imageBase + entries[i];
+
+                srcset = entries.join(",");
+            }
+
+            return srcset;
         }
 
         /**
@@ -571,6 +616,8 @@
 
             // attributes
             attribute       : "data-src",
+            srcsetAttribute : "data-srcset",
+            sizesAttribute  : "sizes",
             retinaAttribute : "data-retina",
             loaderAttribute : "data-loader",
             removeAttribute : true,
