@@ -14,16 +14,16 @@
 ;(function($, window, document, undefined) {
     "use strict";
 
+    // make lazy a bit more case-insensitive :)
+    $.fn.Lazy = $.fn.lazy = function(settings) {
+        return new LazyPlugin(this, settings);
+    };
+
     /**
      * unique plugin instance id
      * @type {number}
      */
     var lazyInstanceId = 0;
-
-    // make lazy a bit more case-insensitive :)
-    $.fn.Lazy = $.fn.lazy = function(settings) {
-        return new LazyPlugin(this, settings);
-    };
 
     /**
      * contains all logic and the whole element handling
@@ -249,7 +249,7 @@
             _triggerCallback("beforeLoad", element);
 
             // fetch all attributes here for better code minimization
-            var attribute = config("attribute"),
+            var srcAttribute = config("attribute"),
                 srcsetAttribute = config("srcsetAttribute"),
                 sizesAttribute = config("sizesAttribute"),
                 retinaAttribute = config("retinaAttribute"),
@@ -312,7 +312,7 @@
 
                     // remove attribute from element
                     if( config("removeAttribute") ) {
-                        element.removeAttr(attribute + " " + srcsetAttribute + " " + retinaAttribute);
+                        element.removeAttr(srcAttribute + " " + srcsetAttribute + " " + retinaAttribute + " " + config("imageBaseAttribute"));
 
                         // only remove 'sizes' attribute, if it was a custom one
                         if( sizesAttribute !== sizes )
@@ -333,9 +333,10 @@
                 });
 
                 // set sources - do it as single 'attr' calls, to be sure 'src' is set after 'srcset'
+                var imageSrc = (_isRetinaDisplay && elementRetina ? elementRetina : element.attr(srcAttribute)) || "";
                 imageObj.attr(sizes, element.attr(sizesAttribute))
                         .attr(srcset, element.attr(srcsetAttribute))
-                        .attr(src, imageBase + (_isRetinaDisplay && elementRetina ? elementRetina : element.attr(attribute)));
+                        .attr(src, imageSrc ? imageBase + imageSrc : null);
 
                 // call after load even on cached image
                 if( imageObj.complete ) imageObj.load();
@@ -395,12 +396,11 @@
         function _getCorrectedSrcSet(srcset, imageBase) {
             if( imageBase ) {
                 // trim, remove unnecessary spaces and split entries
-                var entries = srcset.trim().replace(/\s*,\s*/g, ",").split(",");
+                var entries = srcset.split(",");
+                srcset = "";
 
                 for( var i = 0, l = entries.length; i < l; i++ )
-                    entries[i] = imageBase + entries[i];
-
-                srcset = entries.join(",");
+                    srcset += imageBase + entries[i].trim() + (i !== l - 1 ? "," : "");
             }
 
             return srcset;
@@ -544,6 +544,7 @@
 
             return _instance;
         };
+
         // noinspection JSUndefinedPropertyAssignment
         /**
          * get all left items of this instance
