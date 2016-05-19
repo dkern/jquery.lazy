@@ -14,16 +14,45 @@
 ;(function($, window, document, undefined) {
     "use strict";
 
-    // make lazy a bit more case-insensitive :)
-    $.fn.Lazy = $.fn.lazy = function(settings) {
-        return new LazyPlugin(this, settings);
-    };
-
     /**
      * unique plugin instance id
      * @type {number}
      */
     var lazyInstanceId = 0;
+
+    /**
+     * make lazy available to jquery - and make it a bit more case-insensitive :)
+     * @access public
+     * @type {function}
+     * @param {object} settings
+     * @return void
+     */
+    $.fn.Lazy = $.fn.lazy = function(settings) {
+        return new LazyPlugin(this, settings);
+    };
+
+    /**
+     * helper to add plugins to lazy prototype configuration
+     * @access public
+     * @type {function}
+     * @param {string|Array} names
+     * @param {function} loader
+     * @return void
+     */
+    $.Lazy = $.lazy = function(names, loader) {
+        // exit here already if parameter is not a callable function
+        if( !$.isFunction(loader) ) return;
+
+        // make name an array of names to be sure
+        names = $.isArray(names) ? names : [names];
+
+        var config = LazyPlugin.prototype.configuration;
+
+        // add the loader plugin for every name
+        for( var i = 0, l = names.length; i < l; i++ )
+            if( config[names[i]] === undefined || $.isFunction(config[names[i]]) )
+                config[names[i]] = loader;
+    };
 
     /**
      * contains all logic and the whole element handling
@@ -193,7 +222,7 @@
                             tag = item.tagName.toLowerCase(),
                             attribute = element.attr(config("attribute")),
                             elementImageBase = element.attr(config("imageBaseAttribute")) || imageBase,
-                            customLoader;
+                            customLoader = element.attr(config("loaderAttribute"));
 
                             // is not already handled 
                         if( !element.data(config("handledName")) &&
@@ -207,7 +236,7 @@
                                 (tag != "img" && elementImageBase + attribute != element.css("background-image")) 
                             ) ||
                             // or custom loader is available
-                            (customLoader = element.attr(config("loaderAttribute"))) ))
+                            customLoader ))
                         {
                             // mark element always as handled as this point to prevent double handling
                             loadTriggered = true;
