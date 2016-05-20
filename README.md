@@ -17,6 +17,7 @@
 * [Basic Usage](#basic-usage)
 * [Callbacks / Events](#callbacks--events)
 * [Instances and public Functions](#instances-and-public-functions)
+* [Loader Plugins](#loader-plugins)
 * [Custom Content Loaders](#custom-content-loaders)
 * [Configuration Parameters](#configuration-parameters)
 * [Bugs / Feature request](#bugs--feature-request)
@@ -125,6 +126,9 @@ instance.update([useThrottle]); // loads all elements in current viewport
 instance.loadAll(); // loads all remaining available elements from this instance
 instance.destroy(); // unbinds all events and stop execution directly
 ```
+
+
+## Loader Plugins
 
 
 ## Custom Content Loaders

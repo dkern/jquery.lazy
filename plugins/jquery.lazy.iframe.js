@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - iFrame Plugin - v1.0
+ * jQuery Lazy - iFrame Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -16,19 +16,23 @@
     // <iframe data-loader="iframe" data-src="iframe.html" data-error-detect="true"></iframe>
     $.lazy(["iframe"], function(element) {
         if( element[0].tagName.toLowerCase() == "iframe" ) {
+            var srcAttr = "data-src",
+                errorDetectAttr = "data-error-detect", 
+                errorDetect = element.attr(errorDetectAttr);
+
             // default way, just replace the 'src' attribute
-            if( element.attr("data-error-detect") != "true" && element.attr("data-error-detect") != "1" ) {
+            if( errorDetect != "true" && errorDetect != "1" ) {
                 // set iframe source
-                element.attr("src", element.attr("data-src"))
+                element.attr("src", element.attr(srcAttr))
 
                 // remove attributes
-                .removeAttr("data-src data-error-detect");
+                .removeAttr(srcAttr + " " + errorDetectAttr);
             }
 
             // extended way, even check if the document is available
             else {
                 $.ajax({
-                    url: element.attr("data-src"),
+                    url: element.attr(srcAttr),
                     dataType: "html",
 
                     /**
@@ -42,10 +46,10 @@
                         element.html(response)
                         
                         // change iframe src
-                        .attr("src", element.attr("data-src"))
+                        .attr("src", element.attr(srcAttr))
 
                         // remove attributes
-                        .removeAttr("data-src  data-error-detect");
+                        .removeAttr(srcAttr + " " + errorDetectAttr);
                     },
 
                     /**

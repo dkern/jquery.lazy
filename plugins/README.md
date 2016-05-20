@@ -10,7 +10,7 @@
 * [About Loader Plugins](#about-loader-plugins)
 * [Create own Loader Plugin](#create-own-loader-plugin)
 * [AJAX Loader](#ajax-loader)
-* [Audio / Video Tag Loader](#audio--video-loader)
+* [Audio / Video Loader](#audio--video-loader)
 * [iFrame Loader](#iframe-loader)
 * [NOOP Loader](#noop-loader)
 * [JS / Script Loader](#js--script-loader)
@@ -21,21 +21,21 @@
 ---
 
 ## About Loader Plugins
-The loader plugins for Lazy can be used whenever you want to extend the basic functionality by default or even for many instances of Lazy.
-Just add one, all or a combined plugin file to your html page and all instances can use the loaders.
+The loader plugins for Lazy can be used whenever you want to extend the basic functionality by default or even globally for many instances of Lazy.
+Just add one, all or a combined plugin file to your html page and all instances can use the loaders from now on.
 ```HTML
-<script type='text/javascript' src="jquery.lazy.min.js"></script>
-<script type='text/javascript' src="plugins/jquery.lazy.ajax.min.js"></script>
-<script type='text/javascript' src="plugins/jquery.lazy.iframe.min.js"></script>
-<script type='text/javascript' src="plugins/jquery.lazy.noop.min.js"></script>
-<script type='text/javascript' src="plugins/jquery.lazy.script.min.js"></script>
-<script type='text/javascript' src="plugins/jquery.lazy.video.min.js"></script>
-<script type='text/javascript' src="plugins/jquery.lazy.youtube.min.js"></script>
+<script type="text/javascript" src="jquery.lazy.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.lazy.ajax.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.lazy.av.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.lazy.iframe.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.lazy.noop.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.lazy.script.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.lazy.youtube.min.js"></script>
 
 <!-- or: -->
 
-<script type='text/javascript' src="jquery.lazy.min.js"></script>
-<script type='text/javascript' src="jquery.lazy.plugins.min.js"></script>
+<script type="text/javascript" src="jquery.lazy.min.js"></script>
+<script type="text/javascript" src="jquery.lazy.plugins.min.js"></script>
 ```
 
 
@@ -47,6 +47,10 @@ Best practice is to wrap everything by an [iife](https://en.wikipedia.org/wiki/I
 ;(function($) {
     $.Lazy("pluginLoaderName", function(element) {
         // add your logic here
+
+        // 'this' is the current instance of Lazy
+        // so it's possible to access all public functions, like:
+        // var imageBase = this.config("imageBase");
     });
 })(jQuery);
 ```
@@ -82,25 +86,30 @@ Use `ajax` as the loader name. There are names for specific request types `GET` 
 
 ## Audio / Video Loader
 Loads `<audio>` and `<video>` tags and attach the sources in the right order.
+It's even possible to load optional `<track>` child entries.
 There are to ways you can prepare your audio and/or video tags.
 First way is to add all sources by `data-src` attribute, separated by comma and type by pipe on the element.
 ```HTML
-<audio data-loader="audio" data-src="file.ogg|video/ogg,file.mp3|video/mp3,file.wav|audio/wav"></video>
+<audio data-loader="audio" data-src="file.ogg|audio/ogg,file.mp3|audio/mp3,file.wav|audio/wav"></audio>
 <video data-loader="video" data-src="file.ogv|video/ogv,file.mp4|video/mp4,file.webm|video/webm"></video>
 ```
 
 The other way is to add the sources like default, as child elements.
 ```HTML
 <audio data-loader="audio">
-  <data-src src="file.ogg" type="video/ogg"></data-src>
-  <data-src src="file.mp3" type="video/mp3"></data-src>
-  <data-src src="file.wav" type="video/wav"></data-src>
-</video>
+  <data-src src="file.ogg" type="audio/ogg"></data-src>
+  <data-src src="file.mp3" type="audio/mp3"></data-src>
+  <data-src src="file.wav" type="audio/wav"></data-src>
+</audio>
 
 <video data-loader="video">
   <data-src src="file.ogv" type="video/ogv"></data-src>
   <data-src src="file.mp4" type="video/mp4"></data-src>
   <data-src src="file.webm" type="video/webm"></data-src>
+
+  <data-track kind="captions" src="captions.vtt" srclang="en"></data-track>
+  <data-track kind="descriptions" src="descriptions.vtt" srclang="en"></data-track>
+  <data-track kind="subtitles" src="subtitles.vtt" srclang="de"></data-track>
 </video>
 ```
 

@@ -272,6 +272,9 @@
             var errorCallback = function() {
                 _triggerCallback("onError", element);
                 _reduceAwaiting();
+
+                // prevent further callback calls
+                errorCallback = $.noop;
             };
 
             // trigger function before loading image
@@ -289,11 +292,8 @@
 
             // handle custom loader
             if( customLoader ) {
-                // bind error event to trigger callback and reduce waiting amount
-                element.off("error").one("error", errorCallback);
-
-                // bind after load callback to image
-                element.one("load", function() {
+                // on load callback
+                var loadCallback = function() {
                     // remove attribute from element
                     if( config("removeAttribute") )
                         element.removeAttr(config("loaderAttribute"));
@@ -306,12 +306,27 @@
 
                     // remove item from waiting queue and possibly trigger finished event
                     _reduceAwaiting();
-                });
+
+                    // prevent further callback calls
+                    loadCallback = $.noop;
+                };
+
+                // bind error event to trigger callback and reduce waiting amount
+                element.off("error").one("error", errorCallback);
+
+                // bind after load callback to image
+                element.one("load", loadCallback);
 
                 // trigger custom loader
                 if( !_triggerCallback(customLoader, element, function(response) {
-                    if( response ) element.load();
-                    else element.error();
+                    if( response ) {
+                        element.off("load");
+                        loadCallback();
+                    }
+                    else {
+                        element.off("error");
+                        errorCallback();
+                    }
                 })) element.error();
             }
 
