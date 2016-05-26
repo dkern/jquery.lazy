@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - AJAX Plugin - v1.0
+ * jQuery Lazy - AJAX Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -11,22 +11,24 @@
 ;(function($) {
     // load data by ajax request and pass them to elements inner html, like:
     // <div data-loader="ajax" data-src"url.html" data-method="post" data-type="html"></div>
-    $.lazy("ajax", function(element) { ajaxRequest(element, element.attr("data-method")); });
+    $.lazy("ajax", function(element, response) { ajaxRequest(this, element, response, element.attr("data-method")); });
 
     // load data by ajax get request and pass them to elements inner html, like:
     // <div data-loader="get" data-src"url.html" data-type="html"></div>
-    $.lazy("get", function(element) { ajaxRequest(element, "get"); });
+    $.lazy("get", function(element, response) { ajaxRequest(this, element, response, "get"); });
 
     // load data by ajax post request and pass them to elements inner html, like:
     // <div data-loader="post" data-src"url.html" data-type="html"></div>
-    $.lazy("post", function(element) { ajaxRequest(element, "post"); });
+    $.lazy("post", function(element, response) { ajaxRequest(this, element, response, "post"); });
 
     /**
      * execute ajax request and handle response
+     * @param {object} instance
      * @param {jQuery|object} element
+     * @param {function} response
      * @param {string} [method]
      */
-    function ajaxRequest(element, method) {
+    function ajaxRequest(instance, element, response, method) {
         $.ajax({
             url: element.attr("data-src"),
             type: method || "get",
@@ -35,18 +37,19 @@
             /**
              * success callback
              * @access private
-             * @param {*} response
+             * @param {*} content
              * @return {void}
              */
-            success: function(response) {
+            success: function(content) {
                 // set responded data to element's inner html
-                element.html(response)
+                element.html(content);
+
+                // use response function for Zepto
+                response(true);
 
                 // remove attributes
-                .removeAttr("data-src data-method data-type")
-
-                // pass success to lazy
-                .load();
+                if( instance.config("removeAttribute") )
+                    element.removeAttr("data-src data-method data-type")
             },
 
             /**
@@ -56,8 +59,9 @@
              */
             error: function() {
                 // pass error state to lazy
-                element.error();
+                // use response function for Zepto
+                response(false);
             }
         });
     }
-})(jQuery);
+})(window.jQuery || window.Zepto);

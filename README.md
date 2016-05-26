@@ -17,8 +17,8 @@
 * [Basic Usage](#basic-usage)
 * [Callbacks / Events](#callbacks--events)
 * [Instances and public Functions](#instances-and-public-functions)
-* [Loader Plugins](#loader-plugins)
 * [Custom Content Loaders](#custom-content-loaders)
+* [Loader Plugins](#loader-plugins)
 * [Configuration Parameters](#configuration-parameters)
 * [Bugs / Feature request](#bugs--feature-request)
 * [License](#license)
@@ -35,7 +35,7 @@ On those elements Lazy can set an default image or a placeholder while loading a
 
 ## Compatibility
 Lazy will work with a wide range of browsers and support jQuery versions for years backwards. 
-You can pick any version since jQuery 1.7.0 or greater.
+You can pick any version since jQuery 1.7.2 or greater.
 There is no way to guarantee, that Lazy will work with all browsers, but all I've tested worked great so far.
 If you find any problems in specific browsers, please let me know. 
 
@@ -128,12 +128,9 @@ instance.destroy(); // unbinds all events and stop execution directly
 ```
 
 
-## Loader Plugins
-
-
 ## Custom Content Loaders
 With the custom loaders option there is a powerful solution to load every contents the Lazy way.
-The plugin will handle everything, you just create a loading method witch got triggered whenever the element hits the visibility threshold.
+Lazy will handle everything, you just create a loading method witch got triggered whenever the element hits the visibility threshold.
 It is still possible to load images and custom loaders in the same Lazy instance.
 
 To use this just define a loader function inside the Lazy initialisation and pass the loader name to the `data-loader` attribute of the elements witch should be lazy loaded.
@@ -163,6 +160,15 @@ $(".lazy").Lazy({
     }
 });
 ```
+
+
+## Loader Plugins
+The loader plugins can extend the functionality of Lazy, like loading other elements and data.
+It is basically the same as the [custom content loaders](#custom-content-loaders), with the difference, that plugins can extend all instances at once and permanently.
+With custom content loaders you have to initialize all instances 
+
+For more information and examples, take a look at the [existing plugins](https://github.com/eisbehr-/jquery.lazy/tree/master/plugins) or the [readme.md](https://github.com/eisbehr-/jquery.lazy/tree/master/plugins/README.md) in there.
+
 
 ## Configuration Parameters
 The following configurations is available by default:

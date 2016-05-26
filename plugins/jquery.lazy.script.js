@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - Script Plugin - v1.0
+ * jQuery Lazy - Script Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -10,13 +10,18 @@
  */
 ;(function($) {
     // loads javascript files for script tags, like:
-    // <script data-loader="script" data-src="file.js" type="text/javascript"></script>
-    $.lazy(["js", "javascript", "script"], function(element) {
+    // <script data-src="file.js" type="text/javascript"></script>
+    $.lazy(["js", "javascript", "script"], "script", function(element, response) {
         if( element[0].tagName.toLowerCase() == "script" ) {
-            element.attr("src", element.attr("data-src")).removeAttr("data-src");
+            element.attr("src", element.attr("data-src"));
+
+            // remove attribute
+            if( this.config("removeAttribute") )
+                element.removeAttr("data-src");
         }
         else {
-            element.error();
+            // use response function for Zepto
+            response(false);
         }
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);

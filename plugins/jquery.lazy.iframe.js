@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - iFrame Plugin - v1.1
+ * jQuery Lazy - iFrame Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -9,12 +9,14 @@
  * http://www.gnu.org/licenses/gpl-2.0.html
  */
 ;(function($) {
-    // load youtube video iframe, like:
-    // <iframe data-loader="iframe" data-src="iframe.html"></iframe>
+    // load iframe content, like:
+    // <iframe data-src="iframe.html"></iframe>
     //
     // enable content error check with:
-    // <iframe data-loader="iframe" data-src="iframe.html" data-error-detect="true"></iframe>
-    $.lazy(["iframe"], function(element) {
+    // <iframe data-src="iframe.html" data-error-detect="true"></iframe>
+    $.lazy(["frame", "iframe"], "iframe", function(element, response) {
+        var instance = this;    
+
         if( element[0].tagName.toLowerCase() == "iframe" ) {
             var srcAttr = "data-src",
                 errorDetectAttr = "data-error-detect", 
@@ -23,10 +25,11 @@
             // default way, just replace the 'src' attribute
             if( errorDetect != "true" && errorDetect != "1" ) {
                 // set iframe source
-                element.attr("src", element.attr(srcAttr))
+                element.attr("src", element.attr(srcAttr));
 
                 // remove attributes
-                .removeAttr(srcAttr + " " + errorDetectAttr);
+                if( instance.config("removeAttribute") )
+                    element.removeAttr(srcAttr + " " + errorDetectAttr);
             }
 
             // extended way, even check if the document is available
@@ -38,18 +41,19 @@
                     /**
                      * success callback
                      * @access private
-                     * @param {*} response
+                     * @param {*} content
                      * @return {void}
                      */
-                    success: function(response) {
+                    success: function(content) {
                         // set responded data to element's inner html
-                        element.html(response)
-                        
+                        element.html(content)
+
                         // change iframe src
-                        .attr("src", element.attr(srcAttr))
+                        .attr("src", element.attr(srcAttr));
 
                         // remove attributes
-                        .removeAttr(srcAttr + " " + errorDetectAttr);
+                        if( instance.config("removeAttribute") )
+                            element.removeAttr(srcAttr + " " + errorDetectAttr);
                     },
 
                     /**
@@ -59,15 +63,18 @@
                      */
                     error: function() {
                         // pass error state to lazy
-                        element.error();
+                        // use response function for Zepto
+                        response(false);
+                        
                     }
                 });
             }
         }
 
-        // pass error state to lazy
         else {
-            element.error();
+            // pass error state to lazy
+            // use response function for Zepto
+            response(false);
         }
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);

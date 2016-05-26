@@ -55,10 +55,25 @@ Best practice is to wrap everything by an [iife](https://en.wikipedia.org/wiki/I
 })(jQuery);
 ```
 
+This loader can now be called on every element with the attribute `data-loader` (by default), like:
+```HTML
+<div data-loader="pluginLoaderName"></div>
+```
+
 It is even possible to register an loader plugin with more than one name/alias by default.
 Just pass an array of names as first parameter.
 ```JS
 $.lazy(["oneName", "anotherLoaderName"], function(element) { /**/ });
+```
+
+There is event a way to force plugins used by default on element names without `data-loader` attribute set.
+```JS
+;(function($) {
+    $.Lazy("av", ["audio", "video"], function(element) {
+        // this plugin will automatically handle '<audio>' and '<video>' elements,
+        // even when no 'data-loader' attribute was set on the element
+    });
+})(jQuery);
 ```
 
 For more examples, take a look at the [existing plugins](https://github.com/eisbehr-/jquery.lazy/tree/master/plugins).

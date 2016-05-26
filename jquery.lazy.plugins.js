@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - AJAX Plugin - v1.0
+ * jQuery Lazy - AJAX Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -11,22 +11,24 @@
 ;(function($) {
     // load data by ajax request and pass them to elements inner html, like:
     // <div data-loader="ajax" data-src"url.html" data-method="post" data-type="html"></div>
-    $.lazy("ajax", function(element) { ajaxRequest(element, element.attr("data-method")); });
+    $.lazy("ajax", function(element, response) { ajaxRequest(this, element, response, element.attr("data-method")); });
 
     // load data by ajax get request and pass them to elements inner html, like:
     // <div data-loader="get" data-src"url.html" data-type="html"></div>
-    $.lazy("get", function(element) { ajaxRequest(element, "get"); });
+    $.lazy("get", function(element, response) { ajaxRequest(this, element, response, "get"); });
 
     // load data by ajax post request and pass them to elements inner html, like:
     // <div data-loader="post" data-src"url.html" data-type="html"></div>
-    $.lazy("post", function(element) { ajaxRequest(element, "post"); });
+    $.lazy("post", function(element, response) { ajaxRequest(this, element, response, "post"); });
 
     /**
      * execute ajax request and handle response
+     * @param {object} instance
      * @param {jQuery|object} element
+     * @param {function} response
      * @param {string} [method]
      */
-    function ajaxRequest(element, method) {
+    function ajaxRequest(instance, element, response, method) {
         $.ajax({
             url: element.attr("data-src"),
             type: method || "get",
@@ -35,18 +37,19 @@
             /**
              * success callback
              * @access private
-             * @param {*} response
+             * @param {*} content
              * @return {void}
              */
-            success: function(response) {
+            success: function(content) {
                 // set responded data to element's inner html
-                element.html(response)
+                element.html(content);
+
+                // use response function for Zepto
+                response(true);
 
                 // remove attributes
-                .removeAttr("data-src data-method data-type")
-
-                // pass success to lazy
-                .load();
+                if( instance.config("removeAttribute") )
+                    element.removeAttr("data-src data-method data-type")
             },
 
             /**
@@ -56,14 +59,15 @@
              */
             error: function() {
                 // pass error state to lazy
-                element.error();
+                // use response function for Zepto
+                response(false);
             }
         });
     }
-})(jQuery);
+})(window.jQuery || window.Zepto);
 
 /*!
- * jQuery Lazy - AV Plugin - v1.1
+ * jQuery Lazy - AV Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -74,11 +78,11 @@
  */
 ;(function($) {
     // loads audio and video tags including tracks by two ways, like:
-    // <audio data-loader="audio">
+    // <audio>
     //   <data-src src="audio.ogg" type="video/ogg"></data-src>
     //   <data-src src="audio.mp3" type="video/mp3"></data-src>
     // </audio>
-    // <video data-loader="video" data-poster="poster.jpg">
+    // <video data-poster="poster.jpg">
     //   <data-src src="video.ogv" type="video/ogv"></data-src>
     //   <data-src src="video.webm" type="video/webm"></data-src>
     //   <data-src src="video.mp4" type="video/mp4"></data-src>
@@ -88,13 +92,13 @@
     // </video>
     //
     // or:
-    // <audio data-loader="audio" data-src="audio.ogg|video/ogg,video.mp3|video/mp3"></video>
-    // <video data-loader="video" data-poster="poster.jpg" data-src="video.ogv|video/ogv,video.webm|video/webm,video.mp4|video/mp4">
+    // <audio data-src="audio.ogg|video/ogg,video.mp3|video/mp3"></video>
+    // <video data-poster="poster.jpg" data-src="video.ogv|video/ogv,video.webm|video/webm,video.mp4|video/mp4">
     //   <data-track kind="captions" src="captions.vtt" srclang="en"></data-track>
     //   <data-track kind="descriptions" src="descriptions.vtt" srclang="en"></data-track>
     //   <data-track kind="subtitles" src="subtitles.vtt" srclang="de"></data-track>
     // </video>
-    $.lazy(["av", "audio", "video"], function(element, response) {
+    $.lazy(["av", "audio", "video"], ["audio", "video"], function(element, response) {
         var elementTagName = element[0].tagName.toLowerCase();
 
         if( elementTagName == "audio" || elementTagName == "video" ) {
@@ -151,16 +155,18 @@
 
                     // create a source entry
                     element.append($("<source>")
-                        .one("error", onError)
-                        .attr({src: parts[0].trim(), type: parts[1].trim()}));
+                           .one("error", onError)
+                           .attr({src: parts[0].trim(), type: parts[1].trim()}));
                 });
 
                 // remove now obsolete attribute
-                element.removeAttr(srcAttr);
+                if( this.config("removeAttribute") )
+                    element.removeAttr(srcAttr);
             }
 
-            // pass error state
             else {
+                // pass error state
+                // use response function for Zepto
                 response(false);
             }
 
@@ -170,15 +176,16 @@
             }
         }
 
-        // pass error state
         else {
+            // pass error state
+            // use response function for Zepto
             response(false);
         }
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);
 
 /*!
- * jQuery Lazy - iFrame Plugin - v1.1
+ * jQuery Lazy - iFrame Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -188,12 +195,14 @@
  * http://www.gnu.org/licenses/gpl-2.0.html
  */
 ;(function($) {
-    // load youtube video iframe, like:
-    // <iframe data-loader="iframe" data-src="iframe.html"></iframe>
+    // load iframe content, like:
+    // <iframe data-src="iframe.html"></iframe>
     //
     // enable content error check with:
-    // <iframe data-loader="iframe" data-src="iframe.html" data-error-detect="true"></iframe>
-    $.lazy(["iframe"], function(element) {
+    // <iframe data-src="iframe.html" data-error-detect="true"></iframe>
+    $.lazy(["frame", "iframe"], "iframe", function(element, response) {
+        var instance = this;
+
         if( element[0].tagName.toLowerCase() == "iframe" ) {
             var srcAttr = "data-src",
                 errorDetectAttr = "data-error-detect",
@@ -202,10 +211,11 @@
             // default way, just replace the 'src' attribute
             if( errorDetect != "true" && errorDetect != "1" ) {
                 // set iframe source
-                element.attr("src", element.attr(srcAttr))
+                element.attr("src", element.attr(srcAttr));
 
                 // remove attributes
-                .removeAttr(srcAttr + " " + errorDetectAttr);
+                if( instance.config("removeAttribute") )
+                    element.removeAttr(srcAttr + " " + errorDetectAttr);
             }
 
             // extended way, even check if the document is available
@@ -217,18 +227,19 @@
                     /**
                      * success callback
                      * @access private
-                     * @param {*} response
+                     * @param {*} content
                      * @return {void}
                      */
-                    success: function(response) {
+                    success: function(content) {
                         // set responded data to element's inner html
-                        element.html(response)
+                        element.html(content)
 
                         // change iframe src
-                        .attr("src", element.attr(srcAttr))
+                        .attr("src", element.attr(srcAttr));
 
                         // remove attributes
-                        .removeAttr(srcAttr + " " + errorDetectAttr);
+                        if( instance.config("removeAttribute") )
+                            element.removeAttr(srcAttr + " " + errorDetectAttr);
                     },
 
                     /**
@@ -238,21 +249,24 @@
                      */
                     error: function() {
                         // pass error state to lazy
-                        element.error();
+                        // use response function for Zepto
+                        response(false);
+
                     }
                 });
             }
         }
 
-        // pass error state to lazy
         else {
-            element.error();
+            // pass error state to lazy
+            // use response function for Zepto
+            response(false);
         }
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);
 
 /*!
- * jQuery Lazy - NOOP Plugin - v1.0
+ * jQuery Lazy - NOOP Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -262,22 +276,28 @@
  * http://www.gnu.org/licenses/gpl-2.0.html
  */
 ;(function($) {
+    // will do nothing, used to disable elements or for development
+    // use like:
+    // <div data-loader="noop"></div>
+
     // does not do anything, just a 'no-operation' helper ;)
     $.lazy("noop", function() {});
 
-    // do nothing, but response a successfull loading
-    $.lazy("noop-success", function(element) {
-        element.load();
+    // does nothing, but response a successfull loading
+    $.lazy("noop-success", function(element, response) {
+        // use response function for Zepto
+        response(true);
     });
 
-    // do nothing, but response a failed loading
-    $.lazy("noop-error", function(element) {
-        element.error();
+    // does nothing, but response a failed loading
+    $.lazy("noop-error", function(element, response) {
+        // use response function for Zepto
+        response(false);
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);
 
 /*!
- * jQuery Lazy - Script Plugin - v1.0
+ * jQuery Lazy - Script Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -288,19 +308,24 @@
  */
 ;(function($) {
     // loads javascript files for script tags, like:
-    // <script data-loader="script" data-src="file.js" type="text/javascript"></script>
-    $.lazy(["js", "javascript", "script"], function(element) {
+    // <script data-src="file.js" type="text/javascript"></script>
+    $.lazy(["js", "javascript", "script"], "script", function(element, response) {
         if( element[0].tagName.toLowerCase() == "script" ) {
-            element.attr("src", element.attr("data-src")).removeAttr("data-src");
+            element.attr("src", element.attr("data-src"));
+
+            // remove attribute
+            if( this.config("removeAttribute") )
+                element.removeAttr("data-src");
         }
         else {
-            element.error();
+            // use response function for Zepto
+            response(false);
         }
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);
 
 /*!
- * jQuery Lazy - YouTube Plugin - v1.0
+ * jQuery Lazy - YouTube Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -312,18 +337,20 @@
 ;(function($) {
     // load youtube video iframe, like:
     // <iframe data-loader="yt" data-src="1AYGnw6MwFM" width="560" height="315" frameborder="0" allowfullscreen></iframe>
-    $.lazy(["yt", "youtube"], function(element) {
+    $.lazy(["yt", "youtube"], function(element, response) {
         if( element[0].tagName.toLowerCase() == "iframe" ) {
             // pass source to iframe
-            element.attr("src", "https://www.youtube.com/embed/" + element.attr("data-src") + "?rel=0&amp;showinfo=0")
+            element.attr("src", "https://www.youtube.com/embed/" + element.attr("data-src") + "?rel=0&amp;showinfo=0");
 
             // remove attribute
-            .removeAttr("data-src");
+            if( this.config("removeAttribute") )
+                element.removeAttr("data-src");
         }
 
-        // pass error state
         else {
-            element.error();
+            // pass error state
+            // use response function for Zepto
+            response(true);
         }
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);

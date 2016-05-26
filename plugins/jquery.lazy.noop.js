@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - NOOP Plugin - v1.0
+ * jQuery Lazy - NOOP Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -9,16 +9,22 @@
  * http://www.gnu.org/licenses/gpl-2.0.html
  */
 ;(function($) {
+    // will do nothing, used to disable elements or for development
+    // use like:
+    // <div data-loader="noop"></div>
+
     // does not do anything, just a 'no-operation' helper ;)
     $.lazy("noop", function() {});
 
-    // do nothing, but response a successfull loading
-    $.lazy("noop-success", function(element) {
-        element.load();
+    // does nothing, but response a successfull loading
+    $.lazy("noop-success", function(element, response) {
+        // use response function for Zepto
+        response(true);
     });
 
-    // do nothing, but response a failed loading
-    $.lazy("noop-error", function(element) {
-        element.error();
+    // does nothing, but response a failed loading
+    $.lazy("noop-error", function(element, response) {
+        // use response function for Zepto
+        response(false);
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);
