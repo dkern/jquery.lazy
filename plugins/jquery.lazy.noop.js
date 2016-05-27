@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - NOOP Plugin - v1.1
+ * jQuery & Zepto Lazy - NOOP Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern

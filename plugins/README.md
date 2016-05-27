@@ -7,6 +7,7 @@
 ---
 
 ### Table of Contents
+* [Document Note](#document-note)
 * [About Loader Plugins](#about-loader-plugins)
 * [Create own Loader Plugin](#create-own-loader-plugin)
 * [AJAX Loader](#ajax-loader)
@@ -14,15 +15,21 @@
 * [iFrame Loader](#iframe-loader)
 * [NOOP Loader](#noop-loader)
 * [JS / Script Loader](#js--script-loader)
-* [YouTube Loader](#youtube-loader)
+* [YouTube Video Loader](#youtube-video-loader)
 * [Bugs / Feature request](#bugs--feature-request)
 * [License](#license)
+* [Donation](#donation)
 
 ---
 
+## Document Note
+This is not the main readme file of this project.
+Please go to the [project root](https://github.com/eisbehr-/jquery.lazy) and take a look in the [README.md](https://github.com/eisbehr-/jquery.lazy/blob/master/README.md) to learn more about the basics of Lazy. 
+
+
 ## About Loader Plugins
-The loader plugins for Lazy can be used whenever you want to extend the basic functionality by default or even globally for many instances of Lazy.
-Just add one, all or a combined plugin file to your html page and all instances can use the loaders from now on.
+The loader plugins for Lazy can be used whenever you want to extend the basic functionality by default or globally for many instances of Lazy.
+Just add the plugins you want to use or a combined file containing all to your page and all instances can use the loaders from now on.
 ```HTML
 <script type="text/javascript" src="jquery.lazy.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.lazy.ajax.min.js"></script>
@@ -41,49 +48,59 @@ Just add one, all or a combined plugin file to your html page and all instances 
 
 ## Create own Loader Plugin
 If you want to, you can easily create own loader plugins.
-Just use jQuery's public function `Lazy` to create and register them.
+Just use jQuery or Zepto's public function `Lazy` to create and register them.
 Best practice is to wrap everything by an [iife](https://en.wikipedia.org/wiki/Immediately-invoked_function_expression).
 ```JS
 ;(function($) {
-    $.Lazy("pluginLoaderName", function(element) {
+    $.Lazy("pluginLoaderName", function(element, response) {
         // add your logic here
 
         // 'this' is the current instance of Lazy
         // so it's possible to access all public functions, like:
-        // var imageBase = this.config("imageBase");
+        var imageBase = this.config("imageBase");
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);
 ```
 
-This loader can now be called on every element with the attribute `data-loader` (by default), like:
+This loader can now be called on every element with the attribute `data-loader` (_by default_), like:
 ```HTML
 <div data-loader="pluginLoaderName"></div>
 ```
 
-It is even possible to register an loader plugin with more than one name/alias by default.
-Just pass an array of names as first parameter.
-```JS
-$.lazy(["oneName", "anotherLoaderName"], function(element) { /**/ });
-```
-
-There is event a way to force plugins used by default on element names without `data-loader` attribute set.
+It's possible to register a plugin with more than one name / alias.
 ```JS
 ;(function($) {
-    $.Lazy("av", ["audio", "video"], function(element) {
+    $.Lazy(["pluginLoaderName", "anotherLoaderName"], function(element, response) {
+        // the plugin is now available by 'data-loader="pluginLoaderName"'
+        // and 'data-loader="anotherLoaderName"'
+    });
+})(window.jQuery || window.Zepto);
+```
+
+The optional second parameter gives you the ability to register a plugin by default to an element type.
+When you do this, there is no need to set the `data-loader` attribute on each element you want to use this loader on.
+But keep in mind, if you register an plugin on often used elements, like `<div>`, Lazy will try to handle each of them!
+```JS
+;(function($) {
+    $.Lazy("av", ["audio", "video"], function(element, response) {
         // this plugin will automatically handle '<audio>' and '<video>' elements,
         // even when no 'data-loader' attribute was set on the element
     });
-})(jQuery);
+})(window.jQuery || window.Zepto);
 ```
 
 For more examples, take a look at the [existing plugins](https://github.com/eisbehr-/jquery.lazy/tree/master/plugins).
 
 
 ## AJAX Loader
-The AJAX loader can receive data from a given url and paste the response to the inner html of the element.
-This is useful, when you want do load a bigger amount of content only whenever needed.
+**Names:** `ajax`, `get`, `post`  
+**Parameters:** `data-src`, `data-method`, `data-type`  
+**Default for:** -
 
-Use `ajax` as the loader name. There are names for specific request types `GET` and `POST` too.
+The AJAX loader can receive data from a given url and paste the response to the inner html of the element.
+This is useful, when you want do load a bigger amount of content.
+Use `ajax` as the loader name by default.
+But there are even some shorthand names for specific request types `GET` and `POST` too.
 ```HTML
 <!-- simple GET request -->
 <div data-loader="ajax" data-src="ajax.html"></div>
@@ -100,28 +117,30 @@ Use `ajax` as the loader name. There are names for specific request types `GET` 
 
 
 ## Audio / Video Loader
-Loads `<audio>` and `<video>` tags and attach the sources in the right order.
-It's even possible to load optional `<track>` child entries.
+**Names:** `av`, `audio`, `video`  
+**Parameters:** `data-src`, `data-poster`  
+**Default for:** `<audio>`, `<video>`
+
+Loads `<audio>` and `<video>` elements and attach the sources and tracks in the right order.
 There are to ways you can prepare your audio and/or video tags.
 First way is to add all sources by `data-src` attribute, separated by comma and type by pipe on the element.
 ```HTML
-<audio data-loader="audio" data-src="file.ogg|audio/ogg,file.mp3|audio/mp3,file.wav|audio/wav"></audio>
-<video data-loader="video" data-src="file.ogv|video/ogv,file.mp4|video/mp4,file.webm|video/webm"></video>
+<audio data-src="file.ogg|audio/ogg,file.mp3|audio/mp3,file.wav|audio/wav"></audio>
+<video data-src="file.ogv|video/ogv,file.mp4|video/mp4,file.webm|video/webm" data-poster="poster.jpg"></video>
 ```
 
-The other way is to add the sources like default, as child elements.
+The other way is to add the sources and tracks like default, as child elements.
 ```HTML
-<audio data-loader="audio">
+<audio>
   <data-src src="file.ogg" type="audio/ogg"></data-src>
   <data-src src="file.mp3" type="audio/mp3"></data-src>
   <data-src src="file.wav" type="audio/wav"></data-src>
 </audio>
 
-<video data-loader="video">
+<video data-poster="poster.jpg">
   <data-src src="file.ogv" type="video/ogv"></data-src>
   <data-src src="file.mp4" type="video/mp4"></data-src>
   <data-src src="file.webm" type="video/webm"></data-src>
-
   <data-track kind="captions" src="captions.vtt" srclang="en"></data-track>
   <data-track kind="descriptions" src="descriptions.vtt" srclang="en"></data-track>
   <data-track kind="subtitles" src="subtitles.vtt" srclang="de"></data-track>
@@ -130,29 +149,38 @@ The other way is to add the sources like default, as child elements.
 
 
 ## iFrame Loader
+**Names:** `frame`, `iframe`  
+**Parameters:** `data-src`, `data-error-detect`  
+**Default for:** `<iframe>`
+
 Loads `<iframe>` contents.
-There are two ways the loader can to it.
-The default way will return a successfull load, even if the iframe url is not reachable (_404_).
+The default will return a successfull load, even if the iframe url is not reachable (_like on 404 or wrong url_), because there is no way to check the loaded content in javascript.
 It might be the fastest and safest way to do that.
-If you know the requested path is reachable every time and is not cross-domain, you should use this way.
+If you know the requested path is reachable every time or don't care about error checks, you should use this way!
 ```HTML
-<iframe data-loader="iframe" data-src="iframe.html"></iframe>
+<iframe data-src="iframe.html"></iframe>
 ```
 
-The second way will load the content by AJAX and checks the response, and afterwards pass the html to iframe inner and set the correct url.
-This is a very secure check, but would be a bit more tricky.
-You should only use this on the same origin and when you know, what you doing with AJAX.
+The second way is more professional and support error checks.
+It will load the content by AJAX and checks the response.
+Afterwards pass the HTML content to iframe inner and set the correct url.
+This is a very secure check, but could be a bit more tricky on some use cases.
+You should only use this on the same domain origin.
 
-To enable this feature, set the attribute `data-error-detect` to `true` or `1`.
+To enable this feature, set the attribute `data-error-detect` to `true` or `1` on the iframe element.
 ```HTML
 <iframe data-loader="iframe" data-src="iframe.html" data-error-detect="true"></iframe>
 ```
 
 
 ## NOOP Loader
+**Names:** `noop`, `noop-success`, `noop-error`  
+**Parameters:** -  
+**Default for:** -
+
 The NOOP (_or no-operations_) loader will, like the name said, do nothing.
-There will even be no callbacks like `beforeLoad` or `onError` get triggered when using `noop`.
-It could be useful for developers or to simple and fast disable some other loaders.
+There will even be no callbacks triggered, like `beforeLoad` or `onError`, when using a NOOP` loader.
+It could be useful for developers or to simple, secure and fast disable some other loaders.
 It can be used with all elements.
 ```HTML
 <div data-loader="noop"></div>
@@ -161,29 +189,46 @@ It can be used with all elements.
 There are two other NOOP loaders, helping to debug your code.
 The `noop-success` and `noop-error` loaders will return the current state to Lazy and trigger the right callbacks.
 ```HTML
+<!-- triggers the 'afterLoad' and 'onFinishedAll' callback -->
 <div data-loader="noop-success"></div>
+
+<!-- triggers the 'onError' and 'onFinishedAll' callback -->
 <div data-loader="noop-error"></div>
 ```
 
 
 ## JS / Script Loader
-Loads javascript files the Lazy way.
-Change the `<script>` tags like the example below, and the files will be loaded automatically.
+**Names:** `js`, `javascript`, `script`  
+**Parameters:** `data-src`  
+**Default for:** `<script>`
+
+Loads javascript files on `<script>` element.
+Change the element like the example below, and the files will be loaded automatically after page load.
 ```HTML
-<script data-loader="script" data-src="script.js" type="text/javascript"></script>
+<script data-src="script.js" type="text/javascript"></script>
 ```
 
+**Note:**
+The viewport detection is not correct in some browsers.
+So it could happen, that all script files get loaded right after page load, and not when the user scrolls to them.
 
-## YouTube Loader
+
+## YouTube Video Loader
+**Names:** `yt`, `youtube`  
+**Parameters:** `data-src`  
+**Default for:** -
+
 Loads youtube videos in an `<iframe>`.
-This is the suggested way.
-You can prepare the iframe tag as you would do without lazy loading.
-Only add the youtube video id to the attribute `data-src` and add the loader name `yt` or `youtube` and it's ready.
+This is the suggested way by youtube itself.
+You can prepare the `<iframe>` element as you would do without Lazy.
+Only add the youtube video id to the attribute `data-src` and add the loader name.
+That's all.
 ```HTML
 <iframe data-loader="youtube" data-src="1AYGnw6MwFM" width="560" height="315" frameborder="0"></iframe>
 ```
 
-Please keep in mind: because this is an iframe and there is no feedback, this loader can olny return success to Lazy.
+**Please keep in mind:**
+Because this is an iframe and there is no feedback javascript could check on, this loader can only return success to Lazy.
 There is no way to check if the video was loaded correctly or your provided video id is existing.
 
 
@@ -193,3 +238,11 @@ Please [report](http://github.com/eisbehr-/jquery.lazy/issues) bugs and feel fre
 
 ## License
 Lazy plugins are dual-licensed under [MIT](http://www.opensource.org/licenses/mit-license.php) and [GPL-2.0](http://www.gnu.org/licenses/gpl-2.0.html) license.
+
+
+## Donation
+_You like to support me?_  
+_You appreciate my work?_  
+_You use it in commercial projects?_  
+  
+Feel free to make a little [donation](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FFL6VQJCUZMXC)! :wink:
