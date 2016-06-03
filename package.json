@@ -1,8 +1,8 @@
 {
   "name": "jquery-lazy",
-  "title": "jQuery Lazy - Delayed Content, Image and Background Loader",
+  "title": "jQuery & Zepto Lazy - Delayed Content, Image and Background Loader",
   "version": "1.6.7",
-  "description": "Lazy is a fast, feature-rich and lightweight delayed content loading plugin for jQuery. It's designed to speed up page loading times and decrease traffic to your users by only loading the content in view.",
+  "description": "Lazy is a fast, feature-rich and lightweight delayed content loading plugin for jQuery and Zepto. It's designed to speed up page loading times and decrease traffic to your users by only loading the content in view.",
   "homepage": "http://jquery.eisbehr.de/lazy/",
   "bugs": "http://github.com/eisbehr-/jquery.lazy/issues",
   "author": {
@@ -31,7 +31,9 @@
     "retina",
     "placeholder",
     "jquery",
-    "jquery-plugin"
+    "jquery-plugin",
+    "zepto",
+    "zepto-plugin"
   ],
   "licenses": [{
     "type": "MIT",
@@ -41,6 +43,6 @@
     "url": "http://www.gnu.org/licenses/gpl-2.0.html"
   }],
   "dependencies": {
-    "jquery": ">=1.7.0"
+    "jquery": ">=1.7.2"
   }
 }

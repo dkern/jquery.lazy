@@ -1,5 +1,5 @@
 /*!
- * jQuery Lazy - v1.6.7
+ * jQuery & Zepto Lazy - v1.6.7
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -11,12 +11,66 @@
  * $("img.lazy").lazy();
  */
 
-;(function($, window, document, undefined) {
+;(function(window, undefined) {
     "use strict";
 
-    // make lazy a bit more case-insensitive :)
+    /**
+     * library instance - here and not in construct to be shorter in minization
+     * @return void
+     */
+    var $ = window.jQuery || window.Zepto,
+
+    /**
+     * unique plugin instance id
+     * @type {number}
+     */
+    lazyInstanceId = 0;
+
+    /**
+     * make lazy available to jquery - and make it a bit more case-insensitive :)
+     * @access public
+     * @type {function}
+     * @param {object} settings
+     * @return void
+     */
     $.fn.Lazy = $.fn.lazy = function(settings) {
         return new LazyPlugin(this, settings);
+    };
+
+    /**
+     * helper to add plugins to lazy prototype configuration
+     * @access public
+     * @type {function}
+     * @param {string|Array} names
+     * @param {string|Array} [elements]
+     * @param {function} loader
+     * @return void
+     */
+    $.Lazy = $.lazy = function(names, elements, loader) {
+        // make second parameter optional
+        if( $.isFunction(elements) ) {
+            loader = elements;
+            elements = [];
+        }
+
+        // exit here if parameter is not a callable function
+        if( !$.isFunction(loader) ) return;
+
+        // make parameters an array of names to be sure
+        names = $.isArray(names) ? names : [names];
+        elements = $.isArray(elements) ? elements : [elements];
+
+        var config = LazyPlugin.prototype.config,
+            forced = config._f || (config._f = {});
+
+        // add the loader plugin for every name
+        for( var i = 0, l = names.length; i < l; i++ )
+            if( config[names[i]] === undefined || $.isFunction(config[names[i]]) )
+                config[names[i]] = loader;
+
+        // add forced elements loader
+        for( var c = 0, a = elements.length; c < a; c++ )
+            forced[elements[c]] = names[0];
     };
 
     /**
@@ -25,12 +79,13 @@
      * @access private
      * @type {function}
      * @param {LazyPlugin} instance
-     * @param {function} configuration
+     * @param {object} config
      * @param {object|Array} items
      * @param {object} events
+     * @param {string} namespace
      * @return void
      */
-    function _executeLazy(instance, configuration, items, events) {
+    function _executeLazy(instance, config, items, events, namespace) {
         /**
          * a helper to trigger the 'onFinishedAll' callback after all other events
          * @access private
@@ -57,7 +112,63 @@
          * @access private
          * @type {boolean}
          */
-        _isRetinaDisplay = false;
+        _isRetinaDisplay = false, 
+
+        /**
+         * dictionary entry for better minimization
+         * @access private
+         * @type {string}
+         */
+        _afterLoad = "afterLoad",
+
+        /**
+         * dictionary entry for better minimization
+         * @access private
+         * @type {string}
+         */
+        _load = "load",
+
+        /**
+         * dictionary entry for better minimization
+         * @access private
+         * @type {string}
+         */
+        _error = "error",
+
+        /**
+         * dictionary entry for better minimization
+         * @access private
+         * @type {string}
+         */
+        _img = "img",
+
+        /**
+         * dictionary entry for better minimization
+         * @access private
+         * @type {string}
+         */
+        _src = "src",
+
+        /**
+         * dictionary entry for better minimization
+         * @access private
+         * @type {string}
+         */
+        _srcset = "srcset",
+
+        /**
+         * dictionary entry for better minimization
+         * @access private
+         * @type {string}
+         */
+        _sizes = "sizes",
+
+        /**
+         * dictionary entry for better minimization
+         * @access private
+         * @type {string}
+         */
+        _backgroundImage = "background-image";
 
         /**
          * initialize plugin
@@ -74,12 +185,12 @@
             _prepareItems(items);
 
             // if delay time is set load all items at once after delay time
-            if( configuration("delay") >= 0 ) setTimeout(function() { _lazyLoadItems(true); }, configuration("delay"));
+            if( config.delay >= 0 ) setTimeout(function() { _lazyLoadItems(true); }, config.delay);
 
             // if no delay is set or combine usage is active bind events
-            if( configuration("delay") < 0 || configuration("combined") ) {
+            if( config.delay < 0 || config.combined ) {
                 // create unique event function
-                events.e = _throttle(configuration("throttle"), function(event) {
+                events.e = _throttle(config.throttle, function(event) {
                     // reset detected window size on resize event
                     if( event.type === "resize" )
                         _actualWidth = _actualHeight = -1;
@@ -98,7 +209,7 @@
                 events.g = function() {
                     // filter loaded items before return in case internal filter was not running until now
                     return (items = $(items).filter(function() {
-                        return !$(this).data(configuration("loadedName"));
+                        return !$(this).data(config.loadedName);
                     }));
                 };
 
@@ -106,7 +217,8 @@
                 _lazyLoadItems();
 
                 // bind lazy load functions to scroll and resize event
-                $(configuration("appendScroll")).on("scroll." + instance.name + " resize." + instance.name, events.e);
+                // noinspection JSUnresolvedVariable
+                $(config.appendScroll).on("scroll." + namespace + " resize." + namespace, events.e);
             }
         }
 
@@ -117,29 +229,47 @@
          * @return void
          */
         function _prepareItems(items) {
+            // fetch used configurations before loops
+            var defaultImage = config.defaultImage,
+                placeholder = config.placeholder,
+                imageBase = config.imageBase,
+                srcsetAttribute = config.srcsetAttribute,
+                loaderAttribute = config.loaderAttribute,
+                forcedTags = config._f || {};
+
             // filter items and only add those who not handled yet and got needed attributes available
             items = $(items).filter(function() {
-                return !$(this).data(configuration("handledName")) && ($(this).attr(configuration("attribute")) || $(this).attr(configuration("loaderAttribute")));
+                var element = $(this),
+                    tag = _getElementTagName(this);
+
+                return !element.data(config.handledName) && 
+                       (element.attr(config.attribute) || element.attr(srcsetAttribute) || element.attr(loaderAttribute) || forcedTags[tag] != undefined);
             })
 
             // append plugin instance to all elements
-            .data("plugin_" + instance.name, instance);
+            .data("plugin_" + config.name, instance);
 
-            // set default image and/or placeholder to elements if configured
-            if( configuration("defaultImage") || configuration("placeholder") )
-                for( var i = 0; i < items.length; i++ ) {
-                    var element = $(items[i]),
-                        tag = items[i].tagName.toLowerCase(),
-                        propertyName = "background-image";
+            for( var i = 0, l = items.length; i < l; i++ ) {
+                var element = $(items[i]),
+                    tag = _getElementTagName(items[i]),
+                    elementImageBase = element.attr(config.imageBaseAttribute) || imageBase;
 
-                    // set default image on every element without source
-                    if( tag == "img" && configuration("defaultImage") && !element.attr("src") )
-                        element.attr("src", configuration("defaultImage"));
+                // generate and update source set if an image base is set
+                if( tag == _img && elementImageBase && element.attr(srcsetAttribute) )
+                    element.attr(srcsetAttribute, _getCorrectedSrcSet(element.attr(srcsetAttribute), elementImageBase));
 
-                    // set placeholder on every element without background image
-                    else if( tag != "img" && configuration("placeholder") && (!element.css(propertyName) || element.css(propertyName) == "none") )
-                        element.css(propertyName, "url(" + configuration("placeholder") + ")");
-                }
+                // add loader to forced element types
+                if( forcedTags[tag] != undefined && !element.attr(loaderAttribute) )
+                    element.attr(loaderAttribute, forcedTags[tag]);
+
+                // set default image on every element without source
+                if( tag == _img && defaultImage && !element.attr(_src) )
+                    element.attr(_src, defaultImage);
+
+                // set placeholder on every element without background image
+                else if( tag != _img && placeholder && (!element.css(_backgroundImage) || element.css(_backgroundImage) == "none") )
+                    element.css(_backgroundImage, "url('" + placeholder + "')");
+            }
         }
 
         /**
@@ -152,48 +282,49 @@
             // skip if no items where left
             if( !items.length ) {
                 // destroy instance if option is enabled
-                if( configuration("autoDestroy") )
+                if( config.autoDestroy )
                     // noinspection JSUnresolvedFunction
                     instance.destroy();
 
                 return;
             }
 
-            // helper to see if something was changed
             var loadTriggered = false,
-
-            // get image base once, not on every image loop
-            imageBase = configuration("imageBase") ? configuration("imageBase") : "";
+                imageBase = config.imageBase || "",
+                srcsetAttribute = config.srcsetAttribute,
+                handledName = config.handledName;
 
             // loop all available items
-            for( var i = 0; i < items.length; i++ )
+            for( var i = 0, l = items.length; i < l; i++ )
                 (function(item) {
                     // item is at least in loadable area
-                    if( _isInLoadableArea(item) || allItems ) {
+                    if( allItems || _isInLoadableArea(item) ) {
                         var element = $(item),
-                            tag = item.tagName.toLowerCase(),
-                            attribute = element.attr(configuration("attribute")),
-                            customLoader;
+                            tag = _getElementTagName(item),
+                            attribute = element.attr(config.attribute),
+                            elementImageBase = element.attr(config.imageBaseAttribute) || imageBase,
+                            customLoader = element.attr(config.loaderAttribute);
 
                             // is not already handled 
-                        if( !element.data(configuration("handledName")) &&
+                        if( !element.data(handledName) &&
                             // and is visible or visibility doesn't matter
-                            (!configuration("visibleOnly") || element.is(":visible")) && (
-                            // and image source attribute is available
-                            attribute && (
-                            // and is image tag where attribute is not equal source
-                            (tag == "img" && imageBase + attribute != element.attr("src")) ||
-                            // or is non image tag where attribute is not equal background
-                            (tag != "img" && imageBase + attribute != element.css("background-image")) ) ||
+                            (!config.visibleOnly || element.is(":visible")) && (
+                            // and image source or source set attribute is available
+                            (attribute || element.attr(srcsetAttribute)) && (
+                                // and is image tag where attribute is not equal source or source set
+                                (tag == _img && (elementImageBase + attribute != element.attr(_src) || element.attr(srcsetAttribute) != element.attr(_srcset))) ||
+                                // or is non image tag where attribute is not equal background
+                                (tag != _img && elementImageBase + attribute != element.css(_backgroundImage)) 
+                            ) ||
                             // or custom loader is available
-                            (customLoader = element.attr(configuration("loaderAttribute"))) ))
+                            customLoader ))
                         {
                             // mark element always as handled as this point to prevent double handling
                             loadTriggered = true;
-                            element.data(configuration("handledName"), true);
+                            element.data(handledName, true);
 
                             // load item
-                            _handleItem(element, tag, imageBase, customLoader);
+                            _handleItem(element, tag, elementImageBase, customLoader);
                         }
                     }
                 })(items[i]);
@@ -201,7 +332,7 @@
             // when something was loaded remove them from remaining items
             if( loadTriggered )
                 items = $(items).filter(function() {
-                    return !$(this).data(configuration("handledName"));
+                    return !$(this).data(handledName);
                 });
         }
 
@@ -222,36 +353,61 @@
             var errorCallback = function() {
                 _triggerCallback("onError", element);
                 _reduceAwaiting();
+
+                // prevent further callback calls
+                errorCallback = $.noop;
             };
 
             // trigger function before loading image
             _triggerCallback("beforeLoad", element);
 
+            // fetch all double used data here for better code minimization
+            var srcAttribute = config.attribute,
+                srcsetAttribute = config.srcsetAttribute,
+                sizesAttribute = config.sizesAttribute,
+                retinaAttribute = config.retinaAttribute,
+                removeAttribute = config.removeAttribute,
+                loadedName = config.loadedName,
+                elementRetina = element.attr(retinaAttribute);
+
             // handle custom loader
             if( customLoader ) {
-                // bind error event to trigger callback and reduce waiting amount
-                element.off("error").one("error", errorCallback);
-
-                // bind after load callback to image
-                element.one("load", function() {
+                // on load callback
+                var loadCallback = function() {
                     // remove attribute from element
-                    if( configuration("removeAttribute") )
-                        element.removeAttr(configuration("loaderAttribute"));
+                    if( removeAttribute )
+                        element.removeAttr(config.loaderAttribute);
 
                     // mark element as loaded
-                    element.data(configuration("loadedName"), true);
+                    element.data(loadedName, true);
 
                     // call after load event
-                    _triggerCallback("afterLoad", element);
+                    _triggerCallback(_afterLoad, element);
 
                     // remove item from waiting queue and possibly trigger finished event
-                    _reduceAwaiting();
-                });
+                    // it's needed to be asynchronous to run after filter was in _lazyLoadItems
+                    setTimeout(_reduceAwaiting, 1);
 
-                // trigger custom loader
+                    // prevent further callback calls
+                    loadCallback = $.noop;
+                };
+
+                // bind error event to trigger callback and reduce waiting amount
+                element.off(_error).one(_error, errorCallback)
+
+                // bind after load callback to element
+                .one(_load, loadCallback);
+
+                // trigger custom loader and handle response
                 if( !_triggerCallback(customLoader, element, function(response) {
-                    if( response ) element.load();
-                    else element.error();
+                    if( response ) {
+                        element.off(_load);
+                        loadCallback();
+                    }
+                    else {
+                        element.off(_error);
+                        errorCallback();
+                    }
                 })) element.error();
             }
 
@@ -261,29 +417,39 @@
                 var imageObj = $(new Image());
 
                 // bind error event to trigger callback and reduce waiting amount
-                imageObj.one("error", errorCallback);
+                imageObj.one(_error, errorCallback)
 
                 // bind after load callback to image
-                imageObj.one("load", function() {
+                .one(_load, function() {
                     // remove element from view
                     element.hide();
 
                     // set image back to element
-                    if( tag == "img" ) element.attr("src", imageObj.attr("src"));
-                    else element.css("background-image", "url('" + imageObj.attr("src") + "')");
+                    // do it as single 'attr' calls, to be sure 'src' is set after 'srcset'
+                    if( tag == _img )
+                        element.attr(_sizes, imageObj.attr(_sizes))
+                               .attr(_srcset, imageObj.attr(_srcset))
+                               .attr(_src, imageObj.attr(_src));
+                    else
+                        element.css(_backgroundImage, "url('" + imageObj.attr(_src) + "')");
 
                     // bring it back with some effect!
-                    element[configuration("effect")](configuration("effectTime"));
+                    element[config.effect](config.effectTime);
 
                     // remove attribute from element
-                    if( configuration("removeAttribute") )
-                        element.removeAttr(configuration("attribute") + " " + configuration("retinaAttribute"));
+                    if( removeAttribute ) {
+                        element.removeAttr(srcAttribute + " " + srcsetAttribute + " " + retinaAttribute + " " + config.imageBaseAttribute);
+
+                        // only remove 'sizes' attribute, if it was a custom one
+                        if( sizesAttribute !== _sizes )
+                            element.removeAttr(sizesAttribute);
+                    }
 
                     // mark element as loaded
-                    element.data(configuration("loadedName"), true);
+                    element.data(loadedName, true);
 
                     // call after load event
-                    _triggerCallback("afterLoad", element);
+                    _triggerCallback(_afterLoad, element);
 
                     // cleanup image object
                     imageObj.remove();
@@ -292,11 +458,15 @@
                     _reduceAwaiting();
                 });
 
-                // set source
-                imageObj.attr("src", imageBase + element.attr(configuration(_isRetinaDisplay && element.attr(configuration("retinaAttribute")) ? "retinaAttribute" : "attribute")));
+                // set sources
+                // do it as single 'attr' calls, to be sure 'src' is set after 'srcset'
+                var imageSrc = (_isRetinaDisplay && elementRetina ? elementRetina : element.attr(srcAttribute)) || "";
+                imageObj.attr(_sizes, element.attr(sizesAttribute))
+                        .attr(_srcset, element.attr(srcsetAttribute))
+                        .attr(_src, imageSrc ? imageBase + imageSrc : null);
 
                 // call after load even on cached image
-                if( imageObj.complete ) imageObj.load();
+                imageObj.complete && imageObj.load();
             }
         }
 
@@ -308,8 +478,8 @@
          */
         function _isInLoadableArea(element) {
             var elementBound = element.getBoundingClientRect(),
-                direction    = configuration("scrollDirection"),
-                threshold    = configuration("threshold"),
+                direction    = config.scrollDirection,
+                threshold    = config.threshold,
                 vertical     = // check if element is in loadable area from top
                                ((_getActualHeight() + threshold) > elementBound.top) &&
                                // check if element is even in loadable are from bottom
@@ -318,7 +488,7 @@
                                ((_getActualWidth() + threshold) > elementBound.left) &&
                                // check if element is even in loadable area from right
                                (-threshold < elementBound.right);
- 
+
             if( direction == "vertical" ) return vertical;
             else if( direction == "horizontal" ) return horizontal;
 
@@ -344,6 +514,36 @@
         }
 
         /**
+         * get lowercase tag name of an element
+         * @access private
+         * @param {object} element
+         * @returns {string}
+         */
+        function _getElementTagName(element) {
+            return element.tagName.toLowerCase();
+        }
+
+        /**
+         * prepend image base to all srcset entries
+         * @access private
+         * @param {string} srcset
+         * @param {string} imageBase
+         * @returns {string}
+         */
+        function _getCorrectedSrcSet(srcset, imageBase) {
+            if( imageBase ) {
+                // trim, remove unnecessary spaces and split entries
+                var entries = srcset.split(",");
+                srcset = "";
+
+                for( var i = 0, l = entries.length; i < l; i++ )
+                    srcset += imageBase + entries[i].trim() + (i !== l - 1 ? "," : "");
+            }
+
+            return srcset;
+        }
+
+        /**
          * helper function to throttle down event triggering
          * @access private
          * @param {number} delay
@@ -351,7 +551,8 @@
          * @return {function}
          */
         function _throttle(delay, callback) {
-            var timeout, lastExecute = 0;
+            var timeout,
+                lastExecute = 0;
 
             return function(event, ignoreThrottle) {
                 var elapsed = +new Date() - lastExecute;
@@ -363,7 +564,7 @@
 
                 timeout && clearTimeout(timeout);
 
-                if( elapsed > delay || !configuration("enableThrottle") || ignoreThrottle ) run();
+                if( elapsed > delay || !config.enableThrottle || ignoreThrottle ) run();
                 else timeout = setTimeout(run, delay - elapsed);
             };
         }
@@ -389,7 +590,7 @@
          * @return {boolean}
          */
         function _triggerCallback(callback, element, args) {
-            if( (callback = configuration(callback)) ) {
+            if( (callback = config[callback]) ) {
                 // jQuery's internal '$(arguments).slice(1)' are causing problems at least on old iPads
                 // below is shorthand of 'Array.prototype.slice.call(arguments, 1)'
                 callback.apply(instance, [].slice.call(arguments, 1));
@@ -399,14 +600,13 @@
             return false;
         }
 
-        // set up lazy
-        (function() {
-            // if event driven don't wait for page loading
-            if( configuration("bind") == "event" ) _initialize();
+        // if event driven don't wait for page loading
+        if( config.bind == "event" )
+            _initialize();
 
-            // otherwise load initial items and start lazy after page load
-            else $(window).on("load." + instance.name, _initialize);
-        })();
+        // otherwise load initial items and start lazy after page load
+        else // noinspection JSUnresolvedVariable
+            $(window).on(_load + "." + namespace, _initialize);
     }
 
     /**
@@ -421,7 +621,7 @@
         /**
          * this lazy plugin instance
          * @access private
-         * @type {object|LazyPlugin}
+         * @type {object|LazyPlugin|LazyPlugin.prototype}
          */
         var _instance = this,
 
@@ -430,7 +630,7 @@
          * @access private
          * @type {object}
          */
-        _config = $.extend({}, _instance.configuration, settings),
+        _config = $.extend({}, _instance.config, settings),
 
         /**
          * instance generated event executed on container scroll or resize
@@ -438,13 +638,20 @@
          * @access private
          * @type {object}
          */
-        _events = {};
+        _events = {},
+
+        /**
+         * unique namespace for instance related events
+         * @access private
+         * @type {string}
+         */
+        _namespace = _config.name + "-" + ++lazyInstanceId;
 
         // noinspection JSUndefinedPropertyAssignment
         /**
          * wrapper to get or set an entry from plugin instance configuration
          * much smaller on minify as direct access
-         * @access private
+         * @access public
          * @type {function}
          * @param {string} entryName
          * @param {*} [value]
@@ -453,9 +660,8 @@
         _instance.config = function(entryName, value) {
             if( value === undefined )
                 return _config[entryName];
-            else
-                _config[entryName] = value;
 
+            _config[entryName] = value;
             return _instance;
         };
 
@@ -467,9 +673,7 @@
          * @return {LazyPlugin}
          */
         _instance.addItems = function(items) {
-            if( _events.a )
-                _events.a($.type(items) === "string" ? $(items) : items);
-
+            _events.a && _events.a($.type(items) === "string" ? $(items) : items);
             return _instance;
         };
 
@@ -493,9 +697,7 @@
          * @return {LazyPlugin}
          */
         _instance.update = function(useThrottle) {
-            if( _events.e )
-                _events.e({}, !useThrottle);
-
+            _events.e && _events.e({}, !useThrottle);
             return _instance;
         };
 
@@ -508,9 +710,7 @@
          * @return {LazyPlugin}
          */
         _instance.loadAll = function() {
-            if( _events.e )
-                _events.e({all: true}, true);
-
+            _events.e && _events.e({all: true}, true);
             return _instance;
         };
 
@@ -521,11 +721,12 @@
          * @type {function}
          * @return undefined
          */
-        _instance.destroy = function () {
+        _instance.destroy = function() {
             // unbind instance generated events
-            // noinspection JSUnresolvedFunction
-            $(_instance.config("appendScroll")).off("." + _instance.name, _events.e);
-            $(window).off("." + _instance.name);
+            // noinspection JSUnresolvedFunction, JSUnresolvedVariable
+            $(_config.appendScroll).off("." + _namespace, _events.e);
+            // noinspection JSUnresolvedVariable
+            $(window).off("." + _namespace);
 
             // clear events
             _events = {};
@@ -535,61 +736,54 @@
 
         // start using lazy and return all elements to be chainable or instance for further use
         // noinspection JSUnresolvedVariable
-        _executeLazy(_instance, _instance.config, elements, _events);
-        // noinspection JSUnresolvedFunction
-        return _instance.config("chainable") ? elements : _instance;
+        _executeLazy(_instance, _config, elements, _events, _namespace);
+        return _config.chainable ? elements : _instance;
     }
 
-    // use jquery to extend class prototype without conflicts
-    $.extend(LazyPlugin.prototype, {
-        /**
-         * internal name used for bindings and namespaces
-         * @access public
-         * @var {string}
-         */
-        name: "lazy",
+    /**
+     * settings and configuration data
+     * @access public
+     * @type {object}
+     */
+    LazyPlugin.prototype.config = {
+        // general
+        name               : "lazy",
+        chainable          : true,
+        autoDestroy        : true,
+        bind               : "load",
+        threshold          : 500,
+        visibleOnly        : false,
+        appendScroll       : window,
+        scrollDirection    : "both",
+        imageBase          : null,
+        defaultImage       : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
+        placeholder        : null,
+        delay              : -1,
+        combined           : false,
 
-        /**
-         * settings and configuration data
-         * @access public
-         * @type {object}
-         */
-        configuration: {
-            // general
-            chainable       : true,
-            autoDestroy     : true,
-            bind            : "load",
-            threshold       : 500,
-            visibleOnly     : false,
-            appendScroll    : window,
-            scrollDirection : "both",
-            imageBase       : null,
-            defaultImage    : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
-            placeholder     : null,
-            delay           : -1,
-            combined        : false,
+        // attributes
+        attribute          : "data-src",
+        srcsetAttribute    : "data-srcset",
+        sizesAttribute     : "data-sizes",
+        retinaAttribute    : "data-retina",
+        loaderAttribute    : "data-loader",
+        imageBaseAttribute : "data-imagebase",
+        removeAttribute    : true,
+        handledName        : "handled",
+        loadedName         : "loaded",
 
-            // attributes
-            attribute       : "data-src",
-            retinaAttribute : "data-retina",
-            loaderAttribute : "data-loader",
-            removeAttribute : true,
-            handledName     : "handled",
-            loadedName      : "loaded",
+        // effect
+        effect             : "show",
+        effectTime         : 0,
 
-            // effect
-            effect          : "show",
-            effectTime      : 0,
+        // throttle
+        enableThrottle     : true,
+        throttle           : 250,
 
-            // throttle
-            enableThrottle  : true,
-            throttle        : 250,
-
-            // callbacks
-            beforeLoad      : null,
-            afterLoad       : null,
-            onError         : null,
-            onFinishedAll   : null
-        }
-    });
-})(jQuery, window, document);
+        // callbacks
+        beforeLoad         : undefined,
+        afterLoad          : undefined,
+        onError            : undefined,
+        onFinishedAll      : undefined
+    };
+})(window);
