@@ -65,7 +65,6 @@
                         // pass error state to lazy
                         // use response function for Zepto
                         response(false);
-                        
                     }
                 });
             }

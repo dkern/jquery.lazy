@@ -29,8 +29,9 @@ Please go to the [project root](https://github.com/eisbehr-/jquery.lazy) and tak
 
 ## About Loader Plugins
 The loader plugins for Lazy can be used whenever you want to extend the basic functionality by default or globally for many instances of Lazy.
-Just add the plugins you want to use or a combined file containing all to your page and all instances can use the loaders from now on.
+Just add the plugins you want to use or a combined file, containing all plugins, to your page and all instances can use the plugins from now on.
 ```HTML
+<!-- as single plugin files -->
 <script type="text/javascript" src="jquery.lazy.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.lazy.ajax.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.lazy.av.min.js"></script>
@@ -39,20 +40,19 @@ Just add the plugins you want to use or a combined file containing all to your p
 <script type="text/javascript" src="plugins/jquery.lazy.script.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.lazy.youtube.min.js"></script>
 
-<!-- or: -->
-
+<!-- or combined in one file -->
 <script type="text/javascript" src="jquery.lazy.min.js"></script>
 <script type="text/javascript" src="jquery.lazy.plugins.min.js"></script>
 ```
 
 
-## Create own Loader Plugin
+## Create an own Loader Plugin
 If you want to, you can easily create own loader plugins.
 Just use jQuery or Zepto's public function `Lazy` to create and register them.
-Best practice is to wrap everything by an [iife](https://en.wikipedia.org/wiki/Immediately-invoked_function_expression).
+Best practice is to wrap everything by an [IIFE](https://en.wikipedia.org/wiki/Immediately-invoked_function_expression).
 ```JS
-;(function($) {
-    $.Lazy("pluginLoaderName", function(element, response) {
+(function($) {
+    $.Lazy("pluginName", function(element, response) {
         // add your logic here
 
         // 'this' is the current instance of Lazy
@@ -64,13 +64,13 @@ Best practice is to wrap everything by an [iife](https://en.wikipedia.org/wiki/I
 
 This loader can now be called on every element with the attribute `data-loader` (_by default_), like:
 ```HTML
-<div data-loader="pluginLoaderName"></div>
+<div data-loader="pluginName"></div>
 ```
 
 It's possible to register a plugin with more than one name / alias.
 ```JS
-;(function($) {
-    $.Lazy(["pluginLoaderName", "anotherLoaderName"], function(element, response) {
+(function($) {
+    $.Lazy(["pluginName", "anotherPluginName"], function(element, response) {
         // the plugin is now available by 'data-loader="pluginLoaderName"'
         // and 'data-loader="anotherLoaderName"'
     });
@@ -79,12 +79,14 @@ It's possible to register a plugin with more than one name / alias.
 
 The optional second parameter gives you the ability to register a plugin by default to an element type.
 When you do this, there is no need to set the `data-loader` attribute on each element you want to use this loader on.
+
 But keep in mind, if you register an plugin on often used elements, like `<div>`, Lazy will try to handle each of them!
+If you want to do so anyway, use a most specific selector for jQuery or Zepto.
 ```JS
-;(function($) {
+(function($) {
     $.Lazy("av", ["audio", "video"], function(element, response) {
         // this plugin will automatically handle '<audio>' and '<video>' elements,
-        // even when no 'data-loader' attribute was set on the element
+        // even when no 'data-loader' attribute was set on the elements
     });
 })(window.jQuery || window.Zepto);
 ```

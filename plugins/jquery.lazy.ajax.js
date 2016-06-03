@@ -11,15 +11,21 @@
 ;(function($) {
     // load data by ajax request and pass them to elements inner html, like:
     // <div data-loader="ajax" data-src"url.html" data-method="post" data-type="html"></div>
-    $.lazy("ajax", function(element, response) { ajaxRequest(this, element, response, element.attr("data-method")); });
+    $.lazy("ajax", function(element, response) {
+        ajaxRequest(this, element, response, element.attr("data-method"));
+    });
 
     // load data by ajax get request and pass them to elements inner html, like:
     // <div data-loader="get" data-src"url.html" data-type="html"></div>
-    $.lazy("get", function(element, response) { ajaxRequest(this, element, response, "get"); });
+    $.lazy("get", function(element, response) {
+        ajaxRequest(this, element, response, "get");
+    });
 
     // load data by ajax post request and pass them to elements inner html, like:
     // <div data-loader="post" data-src"url.html" data-type="html"></div>
-    $.lazy("post", function(element, response) { ajaxRequest(this, element, response, "post"); });
+    $.lazy("post", function(element, response) {
+        ajaxRequest(this, element, response, "post");
+    });
 
     /**
      * execute ajax request and handle response

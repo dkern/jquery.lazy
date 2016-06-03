@@ -11,15 +11,21 @@
 ;(function($) {
     // load data by ajax request and pass them to elements inner html, like:
     // <div data-loader="ajax" data-src"url.html" data-method="post" data-type="html"></div>
-    $.lazy("ajax", function(element, response) { ajaxRequest(this, element, response, element.attr("data-method")); });
+    $.lazy("ajax", function(element, response) {
+        ajaxRequest(this, element, response, element.attr("data-method"));
+    });
 
     // load data by ajax get request and pass them to elements inner html, like:
     // <div data-loader="get" data-src"url.html" data-type="html"></div>
-    $.lazy("get", function(element, response) { ajaxRequest(this, element, response, "get"); });
+    $.lazy("get", function(element, response) {
+        ajaxRequest(this, element, response, "get");
+    });
 
     // load data by ajax post request and pass them to elements inner html, like:
     // <div data-loader="post" data-src"url.html" data-type="html"></div>
-    $.lazy("post", function(element, response) { ajaxRequest(this, element, response, "post"); });
+    $.lazy("post", function(element, response) {
+        ajaxRequest(this, element, response, "post");
+    });
 
     /**
      * execute ajax request and handle response
@@ -142,9 +148,8 @@
             .attr("poster", element.attr("data-poster"));
 
             // load by child tags
-            if( sources.length ) {
+            if( sources.length )
                 sources.each(handleSource);
-            }
 
             // load by attribute
             else if( element.attr(srcAttr) ) {
@@ -171,9 +176,8 @@
             }
 
             // load optional tracks
-            if( tracks.length ) {
+            if( tracks.length )
                 tracks.each(handleSource);
-            }
         }
 
         else {
@@ -251,7 +255,6 @@
                         // pass error state to lazy
                         // use response function for Zepto
                         response(false);
-
                     }
                 });
             }

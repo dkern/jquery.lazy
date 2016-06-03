@@ -180,7 +180,7 @@ The following configurations is available by default:
 
 Name               | Type       | Default            | Description
 ------------------ | ---------- | ------------------ | -----------
-name               | *string*   | *'lazy'*           | Internal name, used for namespaces and bindings
+name               | *string*   | *'lazy'*           | Internal name, used for namespaces and bindings.
 chainable          | *boolean*  | *true*             | By default Lazy is chainable and will return all elements. If set to `false` Lazy will return the created plugin instance itself for further use.
 autoDestroy        | *boolean*  | *true*             | Will automatically destroy the instance when no further elements are available to handle.
 bind               | *string*   | *'load'*           | If set to `load`' Lazy starts working directly after page load. If you want to use Lazy on own events set it to `event`'.
@@ -210,10 +210,10 @@ effectTime         | *integer*  | *0*                | Time in milliseconds the 
 enableThrottle     | *boolean*  | *true*             | Throttle down the loading calls on scrolling event.
 throttle           | *integer*  | *250*              | Time in milliseconds the throttle will use to limit the loading calls.
 **callbacks**      |            |                    |
-beforeLoad         | *function* | *undefined*        | Callback function, which will be called before the element gets loaded. Has current element as parameter.
-afterLoad          | *function* | *undefined*        | Callback function, which will be called after the element was loaded. Has current element as parameter.
-onError            | *function* | *undefined*        | Callback function, which will be called if the element could not be loaded. Has current element as parameter.
-onFinishedAll      | *function* | *undefined*        | Callback function, which will be called after all elements was loaded or returned an error. This callback has no parameter.
+beforeLoad         | *function* | *undefined*        | Callback function, which will be called before the element gets loaded. Has current element and response function as parameters. `this` is the current Lazy instance.
+afterLoad          | *function* | *undefined*        | Callback function, which will be called after the element was loaded. Has current element and response function as parameters. `this` is the current Lazy instance.
+onError            | *function* | *undefined*        | Callback function, which will be called if the element could not be loaded. Has current element and response function as parameters. `this` is the current Lazy instance.
+onFinishedAll      | *function* | *undefined*        | Callback function, which will be called after all elements was loaded or returned an error. The callback has no parameters. `this` is the current Lazy instance.
 
 
 ## Bugs / Feature request

@@ -74,9 +74,8 @@
             .attr("poster", element.attr("data-poster"));
 
             // load by child tags
-            if( sources.length ) {
+            if( sources.length )
                 sources.each(handleSource);
-            }
 
             // load by attribute
             else if( element.attr(srcAttr) ) {
@@ -103,9 +102,8 @@
             }
 
             // load optional tracks
-            if( tracks.length ) {
+            if( tracks.length )
                 tracks.each(handleSource);
-            }
         }
 
         else {
