@@ -57,10 +57,10 @@ Some examples below:
 Lazy is available over [cdnjs](http://cdnjs.com) and [jsDelivr](http://jsdelivr.com) CDN and can directly included to every page.
 ```HTML
 <!-- cdnjs -->
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.6.7/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.0/jquery.lazy.min.js"></script>
 
 <!-- jsDeliver -->
-<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/1.6.7/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/1.7.0/jquery.lazy.min.js"></script>
 ```
 
 #### Self-Hosted
