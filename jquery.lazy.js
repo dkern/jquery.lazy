@@ -501,7 +501,9 @@
          * @return {number}
          */
         function _getActualWidth() {
-            return _actualWidth >= 0 ? _actualWidth : (_actualWidth = $(window).width());
+            return _actualWidth >= 0 ? _actualWidth : (_actualWidth = window.innerWidth
+                || document.documentElement.clientWidth
+                || document.body.clientWidth);
         }
 
         /**
@@ -510,7 +512,9 @@
          * @return {number}
          */
         function _getActualHeight() {
-            return _actualHeight >= 0 ? _actualHeight : (_actualHeight = $(window).height());
+            return _actualHeight >= 0 ? _actualHeight : (_actualHeight = window.innerHeight
+                || document.documentElement.clientHeight
+                || document.body.clientHeight);
         }
 
         /**
