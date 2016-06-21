@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - iFrame Plugin - v1.2
+ * jQuery & Zepto Lazy - iFrame Plugin - v1.3
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern

@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.0
+ * jQuery & Zepto Lazy - v1.7.1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -14,14 +14,15 @@
 ;(function(window, undefined) {
     "use strict";
 
+    // noinspection JSUnresolvedVariable
     /**
-     * library instance - here and not in construct to be shorter in minization
+     * library instance - here and not in construct to be shorter in minimization
      * @return void
      */
     var $ = window.jQuery || window.Zepto,
 
     /**
-     * unique plugin instance id
+     * unique plugin instance id counter
      * @type {number}
      */
     lazyInstanceId = 0;

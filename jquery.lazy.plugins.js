@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - AJAX Plugin - v1.1
+ * jQuery & Zepto Lazy - AJAX Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -73,7 +73,7 @@
 })(window.jQuery || window.Zepto);
 
 /*!
- * jQuery & Zepto Lazy - AV Plugin - v1.2
+ * jQuery & Zepto Lazy - AV Plugin - v1.3
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -189,7 +189,7 @@
 })(window.jQuery || window.Zepto);
 
 /*!
- * jQuery & Zepto Lazy - iFrame Plugin - v1.2
+ * jQuery & Zepto Lazy - iFrame Plugin - v1.3
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -269,7 +269,7 @@
 })(window.jQuery || window.Zepto);
 
 /*!
- * jQuery & Zepto Lazy - NOOP Plugin - v1.1
+ * jQuery & Zepto Lazy - NOOP Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -300,7 +300,7 @@
 })(window.jQuery || window.Zepto);
 
 /*!
- * jQuery & Zepto Lazy - Script Plugin - v1.1
+ * jQuery & Zepto Lazy - Script Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -328,7 +328,7 @@
 })(window.jQuery || window.Zepto);
 
 /*!
- * jQuery & Zepto Lazy - YouTube Plugin - v1.1
+ * jQuery & Zepto Lazy - YouTube Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
