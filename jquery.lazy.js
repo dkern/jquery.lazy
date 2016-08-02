@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.1
+ * jQuery & Zepto Lazy - v1.7.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -25,7 +25,13 @@
      * unique plugin instance id counter
      * @type {number}
      */
-    lazyInstanceId = 0;
+    lazyInstanceId = 0,
+
+    /**
+     * helper to register window load for jQuery 3
+     * @type {boolean}
+     */    
+    windowLoaded = false;
 
     /**
      * make lazy available to jquery - and make it a bit more case-insensitive :)
@@ -409,7 +415,7 @@
                         element.off(_error);
                         errorCallback();
                     }
-                })) element.error();
+                })) element.trigger(_error);
             }
 
             // handle images
@@ -601,8 +607,8 @@
             return false;
         }
 
-        // if event driven don't wait for page loading
-        if( config.bind == "event" )
+        // if event driven or window is already loaded don't wait for page loading
+        if( config.bind == "event" || windowLoaded )
             _initialize();
 
         // otherwise load initial items and start lazy after page load
@@ -787,4 +793,8 @@
         onError            : undefined,
         onFinishedAll      : undefined
     };
+
+    // register window load event globally to prevent not loading elements
+    // since jQuery 3.X ready state is fully async and may be executed after 'load' 
+    $(window).on("load", function() { windowLoaded = true; });
 })(window);

@@ -14,7 +14,9 @@
 * [Audio / Video Loader](#audio--video-loader)
 * [iFrame Loader](#iframe-loader)
 * [NOOP Loader](#noop-loader)
+* [Picture Loader](#picture-loader)
 * [JS / Script Loader](#js--script-loader)
+* [Vimeo Video Loader](#vimeo-video-loader)
 * [YouTube Video Loader](#youtube-video-loader)
 * [Bugs / Feature request](#bugs--feature-request)
 * [License](#license)
@@ -37,7 +39,9 @@ Just add the plugins you want to use or a combined file, containing all plugins,
 <script type="text/javascript" src="plugins/jquery.lazy.av.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.lazy.iframe.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.lazy.noop.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.lazy.picture.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.lazy.script.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.lazy.vimeo.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.lazy.youtube.min.js"></script>
 
 <!-- or combined in one file -->
@@ -124,7 +128,7 @@ But there are even some shorthand names for specific request types `GET` and `PO
 **Default for:** `<audio>`, `<video>`
 
 Loads `<audio>` and `<video>` elements and attach the sources and tracks in the right order.
-There are to ways you can prepare your audio and/or video tags.
+There are two ways you can prepare your audio and/or video tags.
 First way is to add all sources by `data-src` attribute, separated by comma and type by pipe on the element.
 ```HTML
 <audio data-src="file.ogg|audio/ogg,file.mp3|audio/mp3,file.wav|audio/wav"></audio>
@@ -199,6 +203,31 @@ The `noop-success` and `noop-error` loaders will return the current state to Laz
 ```
 
 
+## Picture Loader
+**Names:** `pic`, `picture`  
+**Parameters:** `data-src`, `data-srcset`, `data-media`, `data-sizes`
+**Default for:** `<picture>`
+
+Loads `<picture>` elements and attach the sources.
+There are two ways you can prepare your audio and/or video tags.
+First way is to create all child elements from a single line:
+```HTML
+<picture data-src="default.jpg" data-srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" data-media="(min-width: 600px)" data-type="image/jpeg" />
+```
+
+The other way is to add the sources like default, as child elements.
+```HTML
+<picture>
+  <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg">
+  <data-img src="default.jpg" >
+</picture>
+
+<picture data-src="default.jpg">
+  <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg">
+</picture>
+```
+
+
 ## JS / Script Loader
 **Names:** `js`, `javascript`, `script`  
 **Parameters:** `data-src`  
@@ -213,6 +242,25 @@ Change the element like the example below, and the files will be loaded automati
 **Note:**
 The viewport detection is not correct in some browsers.
 So it could happen, that all script files get loaded right after page load, and not when the user scrolls to them.
+
+
+## Vimeo Video Loader
+**Names:** `vimeo`  
+**Parameters:** `data-src`  
+**Default for:** -
+
+Loads vimeo videos in an `<iframe>`.
+This is the suggested way by vimeo itself.
+You can prepare the `<iframe>` element as you would do without Lazy.
+Only add the vimeo video id to the attribute `data-src` and add the loader name.
+That's all.
+```HTML
+<iframe data-loader="vimeo" data-src="176894130" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+```
+
+**Please keep in mind:**
+Because this is an iframe and there is no feedback javascript could check on, this loader can only return success to Lazy.
+There is no way to check if the video was loaded correctly or your provided video id is existing.
 
 
 ## YouTube Video Loader

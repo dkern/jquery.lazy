@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - iFrame Plugin - v1.3
+ * jQuery & Zepto Lazy - iFrame Plugin - v1.4
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -37,6 +37,8 @@
                 $.ajax({
                     url: element.attr(srcAttr),
                     dataType: "html",
+                    crossDomain: true,
+                    xhrFields: {withCredentials: true},
 
                     /**
                      * success callback
