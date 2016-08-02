@@ -205,7 +205,7 @@ The `noop-success` and `noop-error` loaders will return the current state to Laz
 
 ## Picture Loader
 **Names:** `pic`, `picture`  
-**Parameters:** `data-src`, `data-srcset`, `data-media`, `data-sizes`
+**Parameters:** `data-src`, `data-srcset`, `data-media`, `data-sizes`  
 **Default for:** `<picture>`
 
 Loads `<picture>` elements and attach the sources.
