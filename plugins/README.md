@@ -9,7 +9,7 @@
 ### Table of Contents
 * [Document Note](#document-note)
 * [About Loader Plugins](#about-loader-plugins)
-* [Create own Loader Plugin](#create-own-loader-plugin)
+* [Create an own Loader Plugin](#create-an-own-loader-plugin)
 * [AJAX Loader](#ajax-loader)
 * [Audio / Video Loader](#audio--video-loader)
 * [iFrame Loader](#iframe-loader)

@@ -152,6 +152,6 @@
         .attr("src", src);
 
         // call after load even on cached image
-        imageObj.complete && imageObj.load();
+        imageObj.complete && imageObj.load(); // jshint ignore : line
     }
 })(window.jQuery || window.Zepto);

@@ -55,7 +55,7 @@
 
                 // remove attributes
                 if( instance.config("removeAttribute") )
-                    element.removeAttr("data-src data-method data-type")
+                    element.removeAttr("data-src data-method data-type");
             },
 
             /**
@@ -205,11 +205,11 @@
     // enable content error check with:
     // <iframe data-src="iframe.html" data-error-detect="true"></iframe>
     $.lazy(["frame", "iframe"], "iframe", function(element, response) {
-        var instance = this;
+        var instance = this;    
 
         if( element[0].tagName.toLowerCase() == "iframe" ) {
             var srcAttr = "data-src",
-                errorDetectAttr = "data-error-detect",
+                errorDetectAttr = "data-error-detect", 
                 errorDetect = element.attr(errorDetectAttr);
 
             // default way, just replace the 'src' attribute
@@ -387,7 +387,7 @@
                     type: element.attr(typeAttr),
                     srcset: element.attr(srcsetAttr)
                 })
-                    .appendTo(element);
+                .appendTo(element);
 
                 // create image tag
                 createImageObject(element, element.attr(srcAttr), response);
@@ -441,21 +441,21 @@
         var imageObj = $("<img>")
 
         // create image tag an bind callbacks for correct response
-            .one("load", function() {
-                response(true);
-            })
-            .one("error", function() {
-                response(false);
-            })
+        .one("load", function() {
+            response(true);
+        })
+        .one("error", function() {
+            response(false);
+        })
 
-            // set into picture element
-            .appendTo(parent)
+        // set into picture element
+        .appendTo(parent)
 
-            // set src attribute at last to prevent early kick-in
-            .attr("src", src);
+        // set src attribute at last to prevent early kick-in
+        .attr("src", src);
 
         // call after load even on cached image
-        imageObj.complete && imageObj.load();
+        imageObj.complete && imageObj.load(); // jshint ignore : line
     }
 })(window.jQuery || window.Zepto);
 

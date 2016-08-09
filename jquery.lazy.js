@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.2
+ * jQuery & Zepto Lazy - v1.7.3
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -250,7 +250,7 @@
                     tag = _getElementTagName(this);
 
                 return !element.data(config.handledName) && 
-                       (element.attr(config.attribute) || element.attr(srcsetAttribute) || element.attr(loaderAttribute) || forcedTags[tag] != undefined);
+                       (element.attr(config.attribute) || element.attr(srcsetAttribute) || element.attr(loaderAttribute) || forcedTags[tag] !== undefined);
             })
 
             // append plugin instance to all elements
@@ -266,7 +266,7 @@
                     element.attr(srcsetAttribute, _getCorrectedSrcSet(element.attr(srcsetAttribute), elementImageBase));
 
                 // add loader to forced element types
-                if( forcedTags[tag] != undefined && !element.attr(loaderAttribute) )
+                if( forcedTags[tag] !== undefined && !element.attr(loaderAttribute) )
                     element.attr(loaderAttribute, forcedTags[tag]);
 
                 // set default image on every element without source
@@ -302,39 +302,38 @@
                 handledName = config.handledName;
 
             // loop all available items
-            for( var i = 0, l = items.length; i < l; i++ )
-                (function(item) {
-                    // item is at least in loadable area
-                    if( allItems || _isInLoadableArea(item) ) {
-                        var element = $(item),
-                            tag = _getElementTagName(item),
-                            attribute = element.attr(config.attribute),
-                            elementImageBase = element.attr(config.imageBaseAttribute) || imageBase,
-                            customLoader = element.attr(config.loaderAttribute);
+            for( var i = 0; i < items.length; i++ ) {
+                // item is at least in loadable area
+                if( allItems || _isInLoadableArea(items[i]) ) {
+                    var element = $(items[i]),
+                        tag = _getElementTagName(items[i]),
+                        attribute = element.attr(config.attribute),
+                        elementImageBase = element.attr(config.imageBaseAttribute) || imageBase,
+                        customLoader = element.attr(config.loaderAttribute);
 
-                            // is not already handled 
-                        if( !element.data(handledName) &&
-                            // and is visible or visibility doesn't matter
-                            (!config.visibleOnly || element.is(":visible")) && (
-                            // and image source or source set attribute is available
-                            (attribute || element.attr(srcsetAttribute)) && (
-                                // and is image tag where attribute is not equal source or source set
-                                (tag == _img && (elementImageBase + attribute != element.attr(_src) || element.attr(srcsetAttribute) != element.attr(_srcset))) ||
-                                // or is non image tag where attribute is not equal background
-                                (tag != _img && elementImageBase + attribute != element.css(_backgroundImage)) 
-                            ) ||
-                            // or custom loader is available
-                            customLoader ))
-                        {
-                            // mark element always as handled as this point to prevent double handling
-                            loadTriggered = true;
-                            element.data(handledName, true);
+                        // is not already handled 
+                    if( !element.data(handledName) &&
+                        // and is visible or visibility doesn't matter
+                        (!config.visibleOnly || element.is(":visible")) && (
+                        // and image source or source set attribute is available
+                        (attribute || element.attr(srcsetAttribute)) && (
+                            // and is image tag where attribute is not equal source or source set
+                            (tag == _img && (elementImageBase + attribute != element.attr(_src) || element.attr(srcsetAttribute) != element.attr(_srcset))) ||
+                            // or is non image tag where attribute is not equal background
+                            (tag != _img && elementImageBase + attribute != element.css(_backgroundImage)) 
+                        ) ||
+                        // or custom loader is available
+                        customLoader ))
+                    {
+                        // mark element always as handled as this point to prevent double handling
+                        loadTriggered = true;
+                        element.data(handledName, true);
 
-                            // load item
-                            _handleItem(element, tag, elementImageBase, customLoader);
-                        }
+                        // load item
+                        _handleItem(element, tag, elementImageBase, customLoader);
                     }
-                })(items[i]);
+                }
+            }
 
             // when something was loaded remove them from remaining items
             if( loadTriggered )
@@ -473,7 +472,7 @@
                         .attr(_src, imageSrc ? imageBase + imageSrc : null);
 
                 // call after load even on cached image
-                imageObj.complete && imageObj.load();
+                imageObj.complete && imageObj.load(); // jshint ignore : line
             }
         }
 
@@ -569,7 +568,7 @@
                     callback.call(instance, event);
                 }
 
-                timeout && clearTimeout(timeout);
+                timeout && clearTimeout(timeout); // jshint ignore : line
 
                 if( elapsed > delay || !config.enableThrottle || ignoreThrottle ) run();
                 else timeout = setTimeout(run, delay - elapsed);
@@ -652,7 +651,7 @@
          * @access private
          * @type {string}
          */
-        _namespace = _config.name + "-" + ++lazyInstanceId;
+        _namespace = _config.name + "-" + (++lazyInstanceId);
 
         // noinspection JSUndefinedPropertyAssignment
         /**
@@ -680,7 +679,7 @@
          * @return {LazyPlugin}
          */
         _instance.addItems = function(items) {
-            _events.a && _events.a($.type(items) === "string" ? $(items) : items);
+            _events.a && _events.a($.type(items) === "string" ? $(items) : items); // jshint ignore : line
             return _instance;
         };
 
@@ -704,7 +703,7 @@
          * @return {LazyPlugin}
          */
         _instance.update = function(useThrottle) {
-            _events.e && _events.e({}, !useThrottle);
+            _events.e && _events.e({}, !useThrottle); // jshint ignore : line
             return _instance;
         };
 
@@ -717,7 +716,7 @@
          * @return {LazyPlugin}
          */
         _instance.loadAll = function() {
-            _events.e && _events.e({all: true}, true);
+            _events.e && _events.e({all: true}, true); // jshint ignore : line
             return _instance;
         };
 

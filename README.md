@@ -20,6 +20,8 @@
 * [Custom Content Loaders](#custom-content-loaders)
 * [Loader Plugins](#loader-plugins)
 * [Configuration Parameters](#configuration-parameters)
+* [Build and Validation](#build-and-validation)
+  * [Available gulp Tasks](#available-gulp-tasks)
 * [Bugs / Feature request](#bugs--feature-request)
 * [License](#license)
 * [Donation](#donation)
@@ -57,12 +59,12 @@ Some examples below:
 Lazy and all plugins are available over [cdnjs](http://cdnjs.com) and [jsDelivr](http://jsdelivr.com) CDN and can directly included to every page.
 ```HTML
 <!-- jsDeliver -->
-<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/1.7.2/jquery.lazy.min.js"></script>
-<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/1.7.2/jquery.lazy.plugins.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/1.7.3/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazy/1.7.3/jquery.lazy.plugins.min.js"></script>
 
 <!-- cdnjs -->
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.2/jquery.lazy.min.js"></script>
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.2/jquery.plugins.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.3/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.3/jquery.plugins.min.js"></script>
 ```
 
 #### Self-Hosted
@@ -216,6 +218,27 @@ beforeLoad         | *function* | *undefined*        | Callback function, which 
 afterLoad          | *function* | *undefined*        | Callback function, which will be called after the element was loaded. Has current element and response function as parameters. `this` is the current Lazy instance.
 onError            | *function* | *undefined*        | Callback function, which will be called if the element could not be loaded. Has current element and response function as parameters. `this` is the current Lazy instance.
 onFinishedAll      | *function* | *undefined*        | Callback function, which will be called after all elements was loaded or returned an error. The callback has no parameters. `this` is the current Lazy instance.
+
+
+## Build and Validation
+This project includes an automated build script using `gulp`.
+To build your own versions of Lazy you need to [install it](#package-managers) via [npm](https://www.npmjs.com/package/jquery-lazy) first.
+Afterwards you can use the following command in your console to automatically generate all productive files.
+While building these files everything will be checked with `jshint` for validity too.
+```sh
+$ gulp build
+```
+
+### Available `gulp` Tasks:
+
+Name           | Description
+-------------- | -----------
+build          | check & build everything
+build-main     | check & build main project file
+build-plugins  | check & build single plugin files
+concat-plugins | build concatenated plugins file
+validate       | check all files with `jshint`
+watch          | watches all files to check & build everything on change
 
 
 ## Bugs / Feature request

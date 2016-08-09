@@ -55,7 +55,7 @@
 
                 // remove attributes
                 if( instance.config("removeAttribute") )
-                    element.removeAttr("data-src data-method data-type")
+                    element.removeAttr("data-src data-method data-type");
             },
 
             /**
