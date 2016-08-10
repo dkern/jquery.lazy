@@ -50,7 +50,7 @@
     "gulp": "^3.9.1",
     "gulp-concat-util": "^0.5.5",
     "gulp-data": "^1.2.1",
-    "gulp-header": "^1.8.7",
+    "gulp-header": "^1.8.8",
     "gulp-jshint": "^2.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.5.4",

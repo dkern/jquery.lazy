@@ -73,14 +73,11 @@ pipes.buildPlugins = function() {
                     var matches = string.match(/\s-\s([a-z ]+)\s-\sv([0-9.]+)/i);
 
                     return {
-                        plugin: {
-                            name    : matches[1],
-                            version : matches[2]
-                        }
+                        info: "- " + matches[1] + " v" + matches[2]
                     };
                 }))
                 .pipe(uglify())
-                .pipe(header(config.header.replace("<%= info %>", "- <%= file.data.plugin.name %> v<%= file.data.plugin.version %>") + nl, {
+                .pipe(header(config.header + nl, {
                     pkg  : pkg,
                     year : new Date().getFullYear()
                 }))
