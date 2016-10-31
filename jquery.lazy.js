@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.3
+ * jQuery & Zepto Lazy - v1.7.4.rc1
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -220,6 +220,17 @@
                     }));
                 };
 
+                // create function to force loading elements
+                events.f = function(forcedItems) {
+                    for( var i = 0; i < forcedItems.length; i++ ) {
+                        var item = items.filter(forcedItems[i]);
+
+                        if( item.length ) {
+                            _lazyLoadItems(false, item);   
+                        }
+                    }
+                };
+
                 // load initial items
                 _lazyLoadItems();
 
@@ -283,9 +294,10 @@
          * the 'lazy magic' - check all items
          * @access private
          * @param {boolean} [allItems]
+         * @param {object} [forced]
          * @return void
          */
-        function _lazyLoadItems(allItems) {
+        function _lazyLoadItems(allItems, forced) {
             // skip if no items where left
             if( !items.length ) {
                 // destroy instance if option is enabled
@@ -296,17 +308,18 @@
                 return;
             }
 
-            var loadTriggered = false,
+            var elements = forced || items,
+                loadTriggered = false,
                 imageBase = config.imageBase || "",
                 srcsetAttribute = config.srcsetAttribute,
                 handledName = config.handledName;
 
             // loop all available items
-            for( var i = 0; i < items.length; i++ ) {
+            for( var i = 0; i < elements.length; i++ ) {
                 // item is at least in loadable area
-                if( allItems || _isInLoadableArea(items[i]) ) {
-                    var element = $(items[i]),
-                        tag = _getElementTagName(items[i]),
+                if( allItems || forced || _isInLoadableArea(elements[i]) ) {
+                    var element = $(elements[i]),
+                        tag = _getElementTagName(elements[i]),
                         attribute = element.attr(config.attribute),
                         elementImageBase = element.attr(config.imageBaseAttribute) || imageBase,
                         customLoader = element.attr(config.loaderAttribute);
@@ -472,7 +485,7 @@
                         .attr(_src, imageSrc ? imageBase + imageSrc : null);
 
                 // call after load even on cached image
-                imageObj.complete && imageObj.load(); // jshint ignore : line
+                imageObj.complete && imageObj.trigger(_load); // jshint ignore : line
             }
         }
 
@@ -704,6 +717,18 @@
          */
         _instance.update = function(useThrottle) {
             _events.e && _events.e({}, !useThrottle); // jshint ignore : line
+            return _instance;
+        };
+
+        // noinspection JSUndefinedPropertyAssignment
+        /**
+         * force element(s) to load directly, ignoring the viewport
+         * @access public
+         * @param {Array|object|string} items
+         * @return {LazyPlugin}
+         */
+        _instance.force = function(items) {
+            _events.f && _events.f($.type(items) === "string" ? $(items) : items); // jshint ignore : line
             return _instance;
         };
 
