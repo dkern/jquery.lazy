@@ -2,7 +2,13 @@
 [![GitHub version](https://badge.fury.io/gh/eisbehr-%2Fjquery.lazy.svg)](http://github.com/eisbehr-/jquery.lazy)
 [![NPM version](https://badge.fury.io/js/jquery-lazy.svg)](http://www.npmjs.org/package/jquery-lazy)
 [![Bower version](https://badge.fury.io/bo/jquery-lazy.svg)](http://bower.io/search/?q=jquery-lazy)
-[![Dependency version](https://david-dm.org/eisbehr-/jquery.lazy.png)](https://david-dm.org/eisbehr-/jquery.lazy)
+[![Dependencies Status](https://david-dm.org/eisbehr-/jquery.lazy/status.svg)](https://david-dm.org/eisbehr-/jquery.lazy)
+[![devDependencies Status](https://david-dm.org/eisbehr-/jquery.lazy/dev-status.svg)](https://david-dm.org/eisbehr-/jquery.lazy?type=dev)
+
+---
+
+[![JetBrains & PhpStorm](http://jquery.eisbehr.de/lazy/images/git_logo_jb_ps.png)](https://jetbrains.com/phpstorm)  
+_This project is friendly supported by [JetBrains](https://jetbrains.com) & [PhpStorm](https://jetbrains.com/phpstorm)!_
 
 ---
 
