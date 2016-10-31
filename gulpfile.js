@@ -3,6 +3,7 @@
 var gulp   = require("gulp");
 var util   = require("gulp-util");
 var data   = require("gulp-data");
+var noop   = require("gulp-noop");
 var rename = require("gulp-rename");
 var header = require("gulp-header");
 var jshint = require("gulp-jshint");
@@ -42,7 +43,7 @@ var pipes  = {};
 pipes.validateFiles = function(files) {
     return gulp.src(files, {base: "./"})
                .pipe(jshint())
-               .pipe(jshint.reporter("jshint-stylish"))
+               .pipe(jshint.reporter("jshint-stylish"));
 };
 
 // check all files

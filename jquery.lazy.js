@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.4.rc1
+ * jQuery & Zepto Lazy - v1.7.4
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
@@ -223,6 +223,7 @@
                 // create function to force loading elements
                 events.f = function(forcedItems) {
                     for( var i = 0; i < forcedItems.length; i++ ) {
+                        // only handle item if available in current instance
                         var item = items.filter(forcedItems[i]);
 
                         if( item.length ) {
