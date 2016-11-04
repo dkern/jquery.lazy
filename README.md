@@ -70,7 +70,7 @@ Lazy and all plugins are available over [cdnjs](http://cdnjs.com) and [jsDelivr]
 
 <!-- cdnjs -->
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.4/jquery.lazy.min.js"></script>
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.4/jquery.plugins.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.4/jquery.lazy.plugins.min.js"></script>
 ```
 
 #### Self-Hosted
