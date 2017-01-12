@@ -209,7 +209,7 @@
                 // create function to add new items to instance
                 events.a = function(additionalItems) {
                     _prepareItems(additionalItems);
-                    items.push.apply(items, additionalItems);
+                    Array.prototype.push.apply(items, additionalItems);
                 };
 
                 // create function to get all instance items left
