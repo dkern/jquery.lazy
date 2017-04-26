@@ -1,8 +1,8 @@
 /*!
- * jQuery & Zepto Lazy - Picture Plugin - v1.0
+ * jQuery & Zepto Lazy - Picture Plugin - v1.1
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -11,15 +11,15 @@
 ;(function($) {
     // loads picture elements like:
     // <picture>
-    //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg">
-    //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 400px)" type="image/jpeg">
+    //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg"></data-src>
+    //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 400px)" type="image/jpeg"></data-src>
     //   <data-img src="default.jpg" >
     // </picture>
     //
     // or:
     // <picture data-src="default.jpg">
-    //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg">
-    //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 400px)" type="image/jpeg">
+    //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg"></data-src>
+    //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 400px)" type="image/jpeg"></data-src>
     // </picture>
     //
     // or just with attributes in one line:
@@ -27,7 +27,7 @@
     $.lazy(["pic", "picture"], ["picture"], function(element, response) {
         var elementTagName = element[0].tagName.toLowerCase();
 
-        if( elementTagName == "picture" ) {
+        if( elementTagName === "picture" ) {
             var srcAttr = "data-src",
                 srcsetAttr = "data-srcset",
                 mediaAttr = "data-media",
@@ -43,7 +43,7 @@
                 });
 
                 // create img tag from child
-                if( image.length == 1 ) {
+                if( image.length === 1 ) {
                     image = renameElementTag(image, "img");
 
                     // bind event callbacks to new image tag

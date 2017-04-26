@@ -1,8 +1,8 @@
 /*!
- * jQuery & Zepto Lazy - iFrame Plugin - v1.4
+ * jQuery & Zepto Lazy - iFrame Plugin - v1.5
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -15,15 +15,15 @@
     // enable content error check with:
     // <iframe data-src="iframe.html" data-error-detect="true"></iframe>
     $.lazy(["frame", "iframe"], "iframe", function(element, response) {
-        var instance = this;    
+        var instance = this;
 
-        if( element[0].tagName.toLowerCase() == "iframe" ) {
+        if( element[0].tagName.toLowerCase() === "iframe" ) {
             var srcAttr = "data-src",
-                errorDetectAttr = "data-error-detect", 
+                errorDetectAttr = "data-error-detect",
                 errorDetect = element.attr(errorDetectAttr);
 
             // default way, just replace the 'src' attribute
-            if( errorDetect != "true" && errorDetect != "1" ) {
+            if( errorDetect !== "true" && errorDetect !== "1" ) {
                 // set iframe source
                 element.attr("src", element.attr(srcAttr));
 

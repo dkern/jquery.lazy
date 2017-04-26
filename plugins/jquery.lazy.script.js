@@ -2,7 +2,7 @@
  * jQuery & Zepto Lazy - Script Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php

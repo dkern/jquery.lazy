@@ -1,8 +1,8 @@
 /*!
- * jQuery & Zepto Lazy - AV Plugin - v1.3
+ * jQuery & Zepto Lazy - AV Plugin - v1.4
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -33,7 +33,7 @@
     $.lazy(["av", "audio", "video"], ["audio", "video"], function(element, response) {
         var elementTagName = element[0].tagName.toLowerCase();
 
-        if( elementTagName == "audio" || elementTagName == "video" ) {
+        if( elementTagName === "audio" || elementTagName === "video" ) {
             var srcAttr = "data-src",
                 sources = element.find(srcAttr),
                 tracks = element.find("data-track"),
@@ -41,7 +41,7 @@
 
             // create on error callback for sources
             onError = function() {
-                if( ++sourcesInError == sources.length )
+                if( ++sourcesInError === sources.length )
                     response(false);
             },
 
@@ -50,9 +50,9 @@
                 var source = $(this),
                     type = source[0].tagName.toLowerCase(),
                     attributes = source.prop("attributes"),
-                    target = $(type == srcAttr ? "<source>" : "<track>");
+                    target = $(type === srcAttr ? "<source>" : "<track>");
 
-                if( type == srcAttr )
+                if( type === srcAttr )
                     target.one("error", onError);
 
                 $.each(attributes, function(index, attribute) {

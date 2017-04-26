@@ -1,8 +1,8 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.4
+ * jQuery & Zepto Lazy - v1.7.5
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2016, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -224,7 +224,12 @@
                 events.f = function(forcedItems) {
                     for( var i = 0; i < forcedItems.length; i++ ) {
                         // only handle item if available in current instance
-                        var item = items.filter(forcedItems[i]);
+                        // use a compare function, because Zepto can't handle object parameter for filter
+                        // var item = items.filter(forcedItems[i]);
+                        /* jshint loopfunc: true */
+                        var item = items.filter(function() {
+                            return this === forcedItems[i];
+                        });
 
                         if( item.length ) {
                             _lazyLoadItems(false, item);   
@@ -274,7 +279,7 @@
                     elementImageBase = element.attr(config.imageBaseAttribute) || imageBase;
 
                 // generate and update source set if an image base is set
-                if( tag == _img && elementImageBase && element.attr(srcsetAttribute) )
+                if( tag === _img && elementImageBase && element.attr(srcsetAttribute) )
                     element.attr(srcsetAttribute, _getCorrectedSrcSet(element.attr(srcsetAttribute), elementImageBase));
 
                 // add loader to forced element types
@@ -282,11 +287,11 @@
                     element.attr(loaderAttribute, forcedTags[tag]);
 
                 // set default image on every element without source
-                if( tag == _img && defaultImage && !element.attr(_src) )
+                if( tag === _img && defaultImage && !element.attr(_src) )
                     element.attr(_src, defaultImage);
 
                 // set placeholder on every element without background image
-                else if( tag != _img && placeholder && (!element.css(_backgroundImage) || element.css(_backgroundImage) == "none") )
+                else if( tag !== _img && placeholder && (!element.css(_backgroundImage) || element.css(_backgroundImage) === "none") )
                     element.css(_backgroundImage, "url('" + placeholder + "')");
             }
         }
@@ -332,9 +337,9 @@
                         // and image source or source set attribute is available
                         (attribute || element.attr(srcsetAttribute)) && (
                             // and is image tag where attribute is not equal source or source set
-                            (tag == _img && (elementImageBase + attribute != element.attr(_src) || element.attr(srcsetAttribute) != element.attr(_srcset))) ||
+                            (tag === _img && (elementImageBase + attribute !== element.attr(_src) || element.attr(srcsetAttribute) !== element.attr(_srcset))) ||
                             // or is non image tag where attribute is not equal background
-                            (tag != _img && elementImageBase + attribute != element.css(_backgroundImage)) 
+                            (tag !== _img && elementImageBase + attribute !== element.css(_backgroundImage)) 
                         ) ||
                         // or custom loader is available
                         customLoader ))
@@ -446,7 +451,7 @@
 
                     // set image back to element
                     // do it as single 'attr' calls, to be sure 'src' is set after 'srcset'
-                    if( tag == _img )
+                    if( tag === _img )
                         element.attr(_sizes, imageObj.attr(_sizes))
                                .attr(_srcset, imageObj.attr(_srcset))
                                .attr(_src, imageObj.attr(_src));
@@ -509,8 +514,8 @@
                                // check if element is even in loadable area from right
                                (-threshold < elementBound.right);
 
-            if( direction == "vertical" ) return vertical;
-            else if( direction == "horizontal" ) return horizontal;
+            if( direction === "vertical" ) return vertical;
+            else if( direction === "horizontal" ) return horizontal;
 
             return vertical && horizontal;
         }
@@ -621,7 +626,7 @@
         }
 
         // if event driven or window is already loaded don't wait for page loading
-        if( config.bind == "event" || windowLoaded )
+        if( config.bind === "event" || windowLoaded )
             _initialize();
 
         // otherwise load initial items and start lazy after page load
