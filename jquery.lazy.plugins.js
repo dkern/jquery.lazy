@@ -302,7 +302,7 @@
 })(window.jQuery || window.Zepto);
 
 /*!
- * jQuery & Zepto Lazy - Picture Plugin - v1.1
+ * jQuery & Zepto Lazy - Picture Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
@@ -312,6 +312,12 @@
  * http://www.gnu.org/licenses/gpl-2.0.html
  */
 ;(function($) {
+    var srcAttr = "data-src",
+        srcsetAttr = "data-srcset",
+        mediaAttr = "data-media",
+        sizesAttr = "data-sizes",
+        typeAttr = "data-type";
+
     // loads picture elements like:
     // <picture>
     //   <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg"></data-src>
@@ -331,23 +337,19 @@
         var elementTagName = element[0].tagName.toLowerCase();
 
         if( elementTagName === "picture" ) {
-            var srcAttr = "data-src",
-                srcsetAttr = "data-srcset",
-                mediaAttr = "data-media",
-                sizesAttr = "data-sizes",
-                typeAttr = "data-type",
-                sources = element.find(srcAttr),
-                image = element.find("data-img");
+            var sources = element.find(srcAttr),
+                image = element.find("data-img"),
+                imageBase = this.config("imageBase");
 
             // handle as child elements
             if( sources.length ) {
                 sources.each(function() {
-                    renameElementTag($(this), "source");
+                    renameElementTag($(this), "source", imageBase);
                 });
 
                 // create img tag from child
                 if( image.length === 1 ) {
-                    image = renameElementTag(image, "img");
+                    image = renameElementTag(image, "img", imageBase);
 
                     // bind event callbacks to new image tag
                     image.on("load", function() {
@@ -358,14 +360,15 @@
 
                     image.attr("src", image.attr(srcAttr));
 
-                    if( this.config("removeAttribute") )
+                    if( this.config("removeAttribute") ) {
                         image.removeAttr(srcAttr);
+                    }
                 }
 
                 // create img tag from attribute
                 else if( element.attr(srcAttr) ) {
                     // create image tag
-                    createImageObject(element, element.attr(srcAttr), response);
+                    createImageObject(element, imageBase + element.attr(srcAttr), response);
 
                     if( this.config("removeAttribute") )
                         element.removeAttr(srcAttr);
@@ -385,16 +388,17 @@
                     media: element.attr(mediaAttr),
                     sizes: element.attr(sizesAttr),
                     type: element.attr(typeAttr),
-                    srcset: element.attr(srcsetAttr)
+                    srcset: getCorrectedSrcSet(element.attr(srcsetAttr), imageBase)
                 })
                 .appendTo(element);
 
                 // create image tag
-                createImageObject(element, element.attr(srcAttr), response);
+                createImageObject(element, imageBase + element.attr(srcAttr), response);
 
                 // remove attributes from parent picture element
-                if( this.config("removeAttribute") )
+                if( this.config("removeAttribute") ) {
                     element.removeAttr(srcAttr + " " + srcsetAttr + " " + mediaAttr + " " + sizesAttr + " " + typeAttr);
+                }
             }
 
             // pass error state
@@ -415,13 +419,19 @@
      * create a new child element and copy attributes
      * @param {jQuery|object} element
      * @param {string} toType
+     * @param {string} imageBase
      * @return {jQuery|object}
      */
-    function renameElementTag(element, toType) {
+    function renameElementTag(element, toType, imageBase) {
         var attributes = element.prop("attributes"),
             target = $("<" + toType + ">");
 
         $.each(attributes, function(index, attribute) {
+            // build srcset with image base
+            if( attribute.name === "srcset" || attribute.name === srcAttr ) {
+                attribute.value = getCorrectedSrcSet(attribute.value, imageBase);
+            }
+
             target.attr(attribute.name, attribute.value);
         });
 
@@ -456,6 +466,26 @@
 
         // call after load even on cached image
         imageObj.complete && imageObj.load(); // jshint ignore : line
+    }
+
+    /**
+     * prepend image base to all srcset entries
+     * @param {string} srcset
+     * @param {string} imageBase
+     * @returns {string}
+     */
+    function getCorrectedSrcSet(srcset, imageBase) {
+        if( imageBase ) {
+            // trim, remove unnecessary spaces and split entries
+            var entries = srcset.split(",");
+            srcset = "";
+
+            for( var i = 0, l = entries.length; i < l; i++ ) {
+                srcset += imageBase + entries[i].trim() + (i !== l - 1 ? "," : "");
+            }
+        }
+
+        return srcset;
     }
 })(window.jQuery || window.Zepto);
 
