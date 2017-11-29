@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - Picture Plugin - v1.2
+ * jQuery & Zepto Lazy - Picture Plugin - v1.3
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
@@ -36,7 +36,7 @@
         if( elementTagName === "picture" ) {
             var sources = element.find(srcAttr),
                 image = element.find("data-img"),
-                imageBase = this.config("imageBase");
+                imageBase = this.config("imageBase") || "";
 
             // handle as child elements
             if( sources.length ) {

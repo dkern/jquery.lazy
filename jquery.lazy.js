@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.6
+ * jQuery & Zepto Lazy - v1.7.7
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
