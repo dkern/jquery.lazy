@@ -215,7 +215,7 @@ removeAttribute    | *boolean*  | *true*             | Determine if the attribut
 handledName        | *string*   | *'handled'*        | Name of the element tag data attribute, to determine if element is already handled.
 loadedName         | *string*   | *'loaded'*         | Name of the element tag data attribute, to determine if element is already loaded.
 **effect**         |            |                    |
-effect             | *string*   | *'show'*           | Function name of the effect you want to use to show the loaded images, like `show` or `fadein`.
+effect             | *string*   | *'show'*           | Function name of the effect you want to use to show the loaded images, like `show` or `fadeIn`.
 effectTime         | *integer*  | *0*                | Time in milliseconds the effect should use to view the image.
 **throttle**       |            |                    |
 enableThrottle     | *boolean*  | *true*             | Throttle down the loading calls on scrolling event.
