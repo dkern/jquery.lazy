@@ -210,7 +210,7 @@ The `noop-success` and `noop-error` loaders will return the current state to Laz
 **Default for:** `<picture>`
 
 Loads `<picture>` elements and attach the sources.
-There are two ways you can prepare your audio and/or video tags.
+There are two ways you can prepare your picture tags.
 First way is to create all child elements from a single line:
 ```HTML
 <picture data-src="default.jpg" data-srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" data-media="(min-width: 600px)" data-type="image/jpeg" />
@@ -219,12 +219,12 @@ First way is to create all child elements from a single line:
 The other way is to add the sources like default, as child elements.
 ```HTML
 <picture>
-  <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg">
-  <data-img src="default.jpg" >
+  <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg"></data-src>
+  <data-img src="default.jpg"></data-img>
 </picture>
 
 <picture data-src="default.jpg">
-  <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg">
+  <data-src srcset="1x.jpg 1x, 2x.jpg 2x, 3x.jpg 3x" media="(min-width: 600px)" type="image/jpeg"></data-src>
 </picture>
 ```
 
