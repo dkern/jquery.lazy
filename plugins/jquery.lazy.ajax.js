@@ -1,8 +1,8 @@
 /*!
- * jQuery & Zepto Lazy - AJAX Plugin - v1.2
+ * jQuery & Zepto Lazy - AJAX Plugin - v1.3
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2018, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -10,21 +10,27 @@
  */
 ;(function($) {
     // load data by ajax request and pass them to elements inner html, like:
-    // <div data-loader="ajax" data-src"url.html" data-method="post" data-type="html"></div>
-    $.lazy("ajax", function(element, response) {
-        ajaxRequest(this, element, response, element.attr("data-method"));
+    // <div data-loader="ajax" data-src="url.html" data-method="post" data-type="html"></div>
+    $.lazy('ajax', function(element, response) {
+        ajaxRequest(this, element, response, element.attr('data-method'));
     });
 
     // load data by ajax get request and pass them to elements inner html, like:
-    // <div data-loader="get" data-src"url.html" data-type="html"></div>
-    $.lazy("get", function(element, response) {
-        ajaxRequest(this, element, response, "get");
+    // <div data-loader="get" data-src="url.html" data-type="html"></div>
+    $.lazy('get', function(element, response) {
+        ajaxRequest(this, element, response, 'GET');
     });
 
     // load data by ajax post request and pass them to elements inner html, like:
-    // <div data-loader="post" data-src"url.html" data-type="html"></div>
-    $.lazy("post", function(element, response) {
-        ajaxRequest(this, element, response, "post");
+    // <div data-loader="post" data-src="url.html" data-type="html"></div>
+    $.lazy('post', function(element, response) {
+        ajaxRequest(this, element, response, 'POST');
+    });
+
+    // load data by ajax put request and pass them to elements inner html, like:
+    // <div data-loader="put" data-src="url.html" data-type="html"></div>
+    $.lazy('put', function(element, response) {
+        ajaxRequest(this, element, response, 'PUT');
     });
 
     /**
@@ -35,10 +41,18 @@
      * @param {string} [method]
      */
     function ajaxRequest(instance, element, response, method) {
+        method = method.toUpperCase();
+
+        var data;
+        if ((method === 'POST' || method === 'PUT') && instance.config('ajaxCreateData')) {
+            data = instance.config('ajaxCreateData').apply(instance, [element]);
+        }
+
         $.ajax({
-            url: element.attr("data-src"),
-            type: method || "get",
-            dataType: element.attr("data-type") || "html",
+            url: element.attr('data-src'),
+            type: method === 'POST' || method === 'PUT' ? method : 'GET',
+            data: data,
+            dataType: element.attr('data-type') || 'html',
 
             /**
              * success callback
@@ -54,8 +68,9 @@
                 response(true);
 
                 // remove attributes
-                if( instance.config("removeAttribute") )
-                    element.removeAttr("data-src data-method data-type");
+                if (instance.config('removeAttribute')) {
+                    element.removeAttr('data-src data-method data-type');
+                }
             },
 
             /**

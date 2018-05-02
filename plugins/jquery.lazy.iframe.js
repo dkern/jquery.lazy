@@ -2,7 +2,7 @@
  * jQuery & Zepto Lazy - iFrame Plugin - v1.5
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2018, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -14,29 +14,30 @@
     //
     // enable content error check with:
     // <iframe data-src="iframe.html" data-error-detect="true"></iframe>
-    $.lazy(["frame", "iframe"], "iframe", function(element, response) {
+    $.lazy(['frame', 'iframe'], 'iframe', function(element, response) {
         var instance = this;
 
-        if( element[0].tagName.toLowerCase() === "iframe" ) {
-            var srcAttr = "data-src",
-                errorDetectAttr = "data-error-detect",
+        if (element[0].tagName.toLowerCase() === 'iframe') {
+            var srcAttr = 'data-src',
+                errorDetectAttr = 'data-error-detect',
                 errorDetect = element.attr(errorDetectAttr);
 
             // default way, just replace the 'src' attribute
-            if( errorDetect !== "true" && errorDetect !== "1" ) {
+            if (errorDetect !== 'true' && errorDetect !== '1') {
                 // set iframe source
-                element.attr("src", element.attr(srcAttr));
+                element.attr('src', element.attr(srcAttr));
 
                 // remove attributes
-                if( instance.config("removeAttribute") )
-                    element.removeAttr(srcAttr + " " + errorDetectAttr);
+                if (instance.config('removeAttribute')) {
+                    element.removeAttr(srcAttr + ' ' + errorDetectAttr);
+                }
             }
 
             // extended way, even check if the document is available
             else {
                 $.ajax({
                     url: element.attr(srcAttr),
-                    dataType: "html",
+                    dataType: 'html',
                     crossDomain: true,
                     xhrFields: {withCredentials: true},
 
@@ -51,11 +52,12 @@
                         element.html(content)
 
                         // change iframe src
-                        .attr("src", element.attr(srcAttr));
+                        .attr('src', element.attr(srcAttr));
 
                         // remove attributes
-                        if( instance.config("removeAttribute") )
-                            element.removeAttr(srcAttr + " " + errorDetectAttr);
+                        if (instance.config('removeAttribute')) {
+                            element.removeAttr(srcAttr + ' ' + errorDetectAttr);
+                        }
                     },
 
                     /**

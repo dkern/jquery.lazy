@@ -2,7 +2,7 @@
  * jQuery & Zepto Lazy - NOOP Plugin - v1.2
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2018, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -14,16 +14,16 @@
     // <div data-loader="noop"></div>
 
     // does not do anything, just a 'no-operation' helper ;)
-    $.lazy("noop", function() {});
+    $.lazy('noop', function() {});
 
     // does nothing, but response a successfull loading
-    $.lazy("noop-success", function(element, response) {
+    $.lazy('noop-success', function(element, response) {
         // use response function for Zepto
         response(true);
     });
 
     // does nothing, but response a failed loading
-    $.lazy("noop-error", function(element, response) {
+    $.lazy('noop-error', function(element, response) {
         // use response function for Zepto
         response(false);
     });

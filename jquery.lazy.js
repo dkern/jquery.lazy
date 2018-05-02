@@ -1,8 +1,8 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.7
+ * jQuery & Zepto Lazy - v1.7.8
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2018, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -38,7 +38,7 @@
      * @access public
      * @type {function}
      * @param {object} settings
-     * @return void
+     * @return {LazyPlugin}
      */
     $.fn.Lazy = $.fn.lazy = function(settings) {
         return new LazyPlugin(this, settings);
@@ -49,19 +49,19 @@
      * @access public
      * @type {function}
      * @param {string|Array} names
-     * @param {string|Array} [elements]
+     * @param {string|Array|function} [elements]
      * @param {function} loader
      * @return void
      */
     $.Lazy = $.lazy = function(names, elements, loader) {
         // make second parameter optional
-        if( $.isFunction(elements) ) {
+        if ($.isFunction(elements)) {
             loader = elements;
             elements = [];
         }
 
         // exit here if parameter is not a callable function
-        if( !$.isFunction(loader) ) {
+        if (!$.isFunction(loader)) {
             return;
         }
 
@@ -73,14 +73,14 @@
             forced = config._f || (config._f = {});
 
         // add the loader plugin for every name
-        for( var i = 0, l = names.length; i < l; i++ ) {
-            if( config[names[i]] === undefined || $.isFunction(config[names[i]]) ) {
+        for (var i = 0, l = names.length; i < l; i++) {
+            if (config[names[i]] === undefined || $.isFunction(config[names[i]])) {
                 config[names[i]] = loader;
             }
         }
 
         // add forced elements loader
-        for( var c = 0, a = elements.length; c < a; c++ ) {
+        for (var c = 0, a = elements.length; c < a; c++) {
             forced[elements[c]] = names[0];
         }
     };
@@ -131,56 +131,56 @@
          * @access private
          * @type {string}
          */
-        _afterLoad = "afterLoad",
+        _afterLoad = 'afterLoad',
 
         /**
          * dictionary entry for better minimization
          * @access private
          * @type {string}
          */
-        _load = "load",
+        _load = 'load',
 
         /**
          * dictionary entry for better minimization
          * @access private
          * @type {string}
          */
-        _error = "error",
+        _error = 'error',
 
         /**
          * dictionary entry for better minimization
          * @access private
          * @type {string}
          */
-        _img = "img",
+        _img = 'img',
 
         /**
          * dictionary entry for better minimization
          * @access private
          * @type {string}
          */
-        _src = "src",
+        _src = 'src',
 
         /**
          * dictionary entry for better minimization
          * @access private
          * @type {string}
          */
-        _srcset = "srcset",
+        _srcset = 'srcset',
 
         /**
          * dictionary entry for better minimization
          * @access private
          * @type {string}
          */
-        _sizes = "sizes",
+        _sizes = 'sizes',
 
         /**
          * dictionary entry for better minimization
          * @access private
          * @type {string}
          */
-        _backgroundImage = "background-image";
+        _backgroundImage = 'background-image';
 
         /**
          * initialize plugin
@@ -197,18 +197,18 @@
             items = _prepareItems(items);
 
             // if delay time is set load all items at once after delay time
-            if( config.delay >= 0 ) {
+            if (config.delay >= 0) {
                 setTimeout(function() {
                     _lazyLoadItems(true);
                 }, config.delay);
             }
 
             // if no delay is set or combine usage is active bind events
-            if( config.delay < 0 || config.combined ) {
+            if (config.delay < 0 || config.combined) {
                 // create unique event function
                 events.e = _throttle(config.throttle, function(event) {
                     // reset detected window size on resize event
-                    if( event.type === "resize" ) {
+                    if (event.type === 'resize') {
                         _actualWidth = _actualHeight = -1;
                     }
 
@@ -232,7 +232,7 @@
 
                 // create function to force loading elements
                 events.f = function(forcedItems) {
-                    for( var i = 0; i < forcedItems.length; i++ ) {
+                    for (var i = 0; i < forcedItems.length; i++) {
                         // only handle item if available in current instance
                         // use a compare function, because Zepto can't handle object parameter for filter
                         // var item = items.filter(forcedItems[i]);
@@ -241,7 +241,7 @@
                             return this === forcedItems[i];
                         });
 
-                        if( item.length ) {
+                        if (item.length) {
                             _lazyLoadItems(false, item);   
                         }
                     }
@@ -252,7 +252,7 @@
 
                 // bind lazy load functions to scroll and resize event
                 // noinspection JSUnresolvedVariable
-                $(config.appendScroll).on("scroll." + namespace + " resize." + namespace, events.e);
+                $(config.appendScroll).on('scroll.' + namespace + ' resize.' + namespace, events.e);
             }
         }
 
@@ -281,30 +281,30 @@
             })
 
             // append plugin instance to all elements
-            .data("plugin_" + config.name, instance);
+            .data('plugin_' + config.name, instance);
 
-            for( var i = 0, l = items.length; i < l; i++ ) {
+            for (var i = 0, l = items.length; i < l; i++) {
                 var element = $(items[i]),
                     tag = _getElementTagName(items[i]),
                     elementImageBase = element.attr(config.imageBaseAttribute) || imageBase;
 
                 // generate and update source set if an image base is set
-                if( tag === _img && elementImageBase && element.attr(srcsetAttribute) ) {
+                if (tag === _img && elementImageBase && element.attr(srcsetAttribute)) {
                     element.attr(srcsetAttribute, _getCorrectedSrcSet(element.attr(srcsetAttribute), elementImageBase));
                 }
 
                 // add loader to forced element types
-                if( forcedTags[tag] !== undefined && !element.attr(loaderAttribute) ) {
+                if (forcedTags[tag] !== undefined && !element.attr(loaderAttribute)) {
                     element.attr(loaderAttribute, forcedTags[tag]);
                 }
 
                 // set default image on every element without source
-                if( tag === _img && defaultImage && !element.attr(_src) ) {
+                if (tag === _img && defaultImage && !element.attr(_src)) {
                     element.attr(_src, defaultImage);
                 }
 
                 // set placeholder on every element without background image
-                else if( tag !== _img && placeholder && (!element.css(_backgroundImage) || element.css(_backgroundImage) === "none") ) {
+                else if (tag !== _img && placeholder && (!element.css(_backgroundImage) || element.css(_backgroundImage) === 'none')) {
                     element.css(_backgroundImage, "url('" + placeholder + "')");
                 }
             }
@@ -321,9 +321,9 @@
          */
         function _lazyLoadItems(allItems, forced) {
             // skip if no items where left
-            if( !items.length ) {
+            if (!items.length) {
                 // destroy instance if option is enabled
-                if( config.autoDestroy ) {
+                if (config.autoDestroy) {
                     // noinspection JSUnresolvedFunction
                     instance.destroy();
                 }
@@ -333,14 +333,14 @@
 
             var elements = forced || items,
                 loadTriggered = false,
-                imageBase = config.imageBase || "",
+                imageBase = config.imageBase || '',
                 srcsetAttribute = config.srcsetAttribute,
                 handledName = config.handledName;
 
             // loop all available items
-            for( var i = 0; i < elements.length; i++ ) {
+            for (var i = 0; i < elements.length; i++) {
                 // item is at least in loadable area
-                if( allItems || forced || _isInLoadableArea(elements[i]) ) {
+                if (allItems || forced || _isInLoadableArea(elements[i])) {
                     var element = $(elements[i]),
                         tag = _getElementTagName(elements[i]),
                         attribute = element.attr(config.attribute),
@@ -348,9 +348,9 @@
                         customLoader = element.attr(config.loaderAttribute);
 
                         // is not already handled 
-                    if( !element.data(handledName) &&
+                    if (!element.data(handledName) &&
                         // and is visible or visibility doesn't matter
-                        (!config.visibleOnly || element.is(":visible")) && (
+                        (!config.visibleOnly || element.is(':visible')) && (
                         // and image source or source set attribute is available
                         (attribute || element.attr(srcsetAttribute)) && (
                             // and is image tag where attribute is not equal source or source set
@@ -359,7 +359,7 @@
                             (tag !== _img && elementImageBase + attribute !== element.css(_backgroundImage))
                         ) ||
                         // or custom loader is available
-                        customLoader ))
+                        customLoader))
                     {
                         // mark element always as handled as this point to prevent double handling
                         loadTriggered = true;
@@ -372,7 +372,7 @@
             }
 
             // when something was loaded remove them from remaining items
-            if( loadTriggered ) {
+            if (loadTriggered) {
                 items = $(items).filter(function() {
                     return !$(this).data(handledName);
                 });
@@ -394,7 +394,7 @@
 
             // extended error callback for correct 'onFinishedAll' handling
             var errorCallback = function() {
-                _triggerCallback("onError", element);
+                _triggerCallback('onError', element);
                 _reduceAwaiting();
 
                 // prevent further callback calls
@@ -402,7 +402,7 @@
             };
 
             // trigger function before loading image
-            _triggerCallback("beforeLoad", element);
+            _triggerCallback('beforeLoad', element);
 
             // fetch all double used data here for better code minimization
             var srcAttribute = config.attribute,
@@ -414,11 +414,11 @@
                 elementRetina = element.attr(retinaAttribute);
 
             // handle custom loader
-            if( customLoader ) {
+            if (customLoader) {
                 // on load callback
                 var loadCallback = function() {
                     // remove attribute from element
-                    if( removeAttribute ) {
+                    if (removeAttribute) {
                         element.removeAttr(config.loaderAttribute);
                     }
 
@@ -443,8 +443,8 @@
                 .one(_load, loadCallback);
 
                 // trigger custom loader and handle response
-                if( !_triggerCallback(customLoader, element, function(response) {
-                    if( response ) {
+                if (!_triggerCallback(customLoader, element, function(response) {
+                    if(response) {
                         element.off(_load);
                         loadCallback();
                     }
@@ -452,7 +452,9 @@
                         element.off(_error);
                         errorCallback();
                     }
-                })) element.trigger(_error);
+                })) {
+                    element.trigger(_error);
+                }
             }
 
             // handle images
@@ -470,7 +472,7 @@
 
                     // set image back to element
                     // do it as single 'attr' calls, to be sure 'src' is set after 'srcset'
-                    if( tag === _img ) {
+                    if (tag === _img) {
                         element.attr(_sizes, imageObj.attr(_sizes))
                                .attr(_srcset, imageObj.attr(_srcset))
                                .attr(_src, imageObj.attr(_src));
@@ -483,11 +485,11 @@
                     element[config.effect](config.effectTime);
 
                     // remove attribute from element
-                    if( removeAttribute ) {
-                        element.removeAttr(srcAttribute + " " + srcsetAttribute + " " + retinaAttribute + " " + config.imageBaseAttribute);
+                    if (removeAttribute) {
+                        element.removeAttr(srcAttribute + ' ' + srcsetAttribute + ' ' + retinaAttribute + ' ' + config.imageBaseAttribute);
 
                         // only remove 'sizes' attribute, if it was a custom one
-                        if( sizesAttribute !== _sizes ) {
+                        if (sizesAttribute !== _sizes) {
                             element.removeAttr(sizesAttribute);
                         }
                     }
@@ -507,7 +509,7 @@
 
                 // set sources
                 // do it as single 'attr' calls, to be sure 'src' is set after 'srcset'
-                var imageSrc = (_isRetinaDisplay && elementRetina ? elementRetina : element.attr(srcAttribute)) || "";
+                var imageSrc = (_isRetinaDisplay && elementRetina ? elementRetina : element.attr(srcAttribute)) || '';
                 imageObj.attr(_sizes, element.attr(sizesAttribute))
                         .attr(_srcset, element.attr(srcsetAttribute))
                         .attr(_src, imageSrc ? imageBase + imageSrc : null);
@@ -536,10 +538,10 @@
                                // check if element is even in loadable area from right
                                (-threshold < elementBound.right);
 
-            if( direction === "vertical" ) {
+            if (direction === 'vertical') {
                 return vertical;
             }
-            else if( direction === "horizontal" ) {
+            else if (direction === 'horizontal') {
                 return horizontal;
             }
 
@@ -582,13 +584,13 @@
          * @returns {string}
          */
         function _getCorrectedSrcSet(srcset, imageBase) {
-            if( imageBase ) {
+            if (imageBase) {
                 // trim, remove unnecessary spaces and split entries
-                var entries = srcset.split(",");
-                srcset = "";
+                var entries = srcset.split(',');
+                srcset = '';
 
-                for( var i = 0, l = entries.length; i < l; i++ ) {
-                    srcset += imageBase + entries[i].trim() + (i !== l - 1 ? "," : "");
+                for (var i = 0, l = entries.length; i < l; i++) {
+                    srcset += imageBase + entries[i].trim() + (i !== l - 1 ? ',' : '');
                 }
             }
 
@@ -617,7 +619,7 @@
 
                 timeout && clearTimeout(timeout); // jshint ignore : line
 
-                if( elapsed > delay || !config.enableThrottle || ignoreThrottle ) {
+                if (elapsed > delay || !config.enableThrottle || ignoreThrottle) {
                     run();
                 }
                 else {
@@ -635,8 +637,8 @@
             --_awaitingAfterLoad;
 
             // if no items were left trigger finished event
-            if( !items.length && !_awaitingAfterLoad ) {
-                _triggerCallback("onFinishedAll");
+            if (!items.length && !_awaitingAfterLoad) {
+                _triggerCallback('onFinishedAll');
             }
         }
 
@@ -649,7 +651,7 @@
          * @return {boolean}
          */
         function _triggerCallback(callback, element, args) {
-            if( (callback = config[callback]) ) {
+            if ((callback = config[callback])) {
                 // jQuery's internal '$(arguments).slice(1)' are causing problems at least on old iPads
                 // below is shorthand of 'Array.prototype.slice.call(arguments, 1)'
                 callback.apply(instance, [].slice.call(arguments, 1));
@@ -660,14 +662,14 @@
         }
 
         // if event driven or window is already loaded don't wait for page loading
-        if( config.bind === "event" || windowLoaded ) {
+        if (config.bind === 'event' || windowLoaded) {
             _initialize();
         }
 
         // otherwise load initial items and start lazy after page load
         else {
             // noinspection JSUnresolvedVariable
-            $(window).on(_load + "." + namespace, _initialize);
+            $(window).on(_load + '.' + namespace, _initialize);
         }  
     }
 
@@ -707,7 +709,7 @@
          * @access private
          * @type {string}
          */
-        _namespace = _config.name + "-" + (++lazyInstanceId);
+        _namespace = _config.name + '-' + (++lazyInstanceId);
 
         // noinspection JSUndefinedPropertyAssignment
         /**
@@ -720,7 +722,7 @@
          * @return {LazyPlugin|*}
          */
         _instance.config = function(entryName, value) {
-            if( value === undefined ) {
+            if (value === undefined) {
                 return _config[entryName];
             }
 
@@ -736,7 +738,7 @@
          * @return {LazyPlugin}
          */
         _instance.addItems = function(items) {
-            _events.a && _events.a($.type(items) === "string" ? $(items) : items); // jshint ignore : line
+            _events.a && _events.a($.type(items) === 'string' ? $(items) : items); // jshint ignore : line
             return _instance;
         };
 
@@ -772,7 +774,7 @@
          * @return {LazyPlugin}
          */
         _instance.force = function(items) {
-            _events.f && _events.f($.type(items) === "string" ? $(items) : items); // jshint ignore : line
+            _events.f && _events.f($.type(items) === 'string' ? $(items) : items); // jshint ignore : line
             return _instance;
         };
 
@@ -799,9 +801,9 @@
         _instance.destroy = function() {
             // unbind instance generated events
             // noinspection JSUnresolvedFunction, JSUnresolvedVariable
-            $(_config.appendScroll).off("." + _namespace, _events.e);
+            $(_config.appendScroll).off('.' + _namespace, _events.e);
             // noinspection JSUnresolvedVariable
-            $(window).off("." + _namespace);
+            $(window).off('.' + _namespace);
 
             // clear events
             _events = {};
@@ -818,37 +820,37 @@
     /**
      * settings and configuration data
      * @access public
-     * @type {object}
+     * @type {object|*}
      */
     LazyPlugin.prototype.config = {
         // general
-        name               : "lazy",
+        name               : 'lazy',
         chainable          : true,
         autoDestroy        : true,
-        bind               : "load",
+        bind               : 'load',
         threshold          : 500,
         visibleOnly        : false,
         appendScroll       : window,
-        scrollDirection    : "both",
+        scrollDirection    : 'both',
         imageBase          : null,
-        defaultImage       : "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
+        defaultImage       : 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
         placeholder        : null,
         delay              : -1,
         combined           : false,
 
         // attributes
-        attribute          : "data-src",
-        srcsetAttribute    : "data-srcset",
-        sizesAttribute     : "data-sizes",
-        retinaAttribute    : "data-retina",
-        loaderAttribute    : "data-loader",
-        imageBaseAttribute : "data-imagebase",
+        attribute          : 'data-src',
+        srcsetAttribute    : 'data-srcset',
+        sizesAttribute     : 'data-sizes',
+        retinaAttribute    : 'data-retina',
+        loaderAttribute    : 'data-loader',
+        imageBaseAttribute : 'data-imagebase',
         removeAttribute    : true,
-        handledName        : "handled",
-        loadedName         : "loaded",
+        handledName        : 'handled',
+        loadedName         : 'loaded',
 
         // effect
-        effect             : "show",
+        effect             : 'show',
         effectTime         : 0,
 
         // throttle
@@ -864,7 +866,7 @@
 
     // register window load event globally to prevent not loading elements
     // since jQuery 3.X ready state is fully async and may be executed after 'load' 
-    $(window).on("load", function() {
+    $(window).on('load', function() {
         windowLoaded = true;
     });
 })(window);

@@ -2,7 +2,7 @@
  * jQuery & Zepto Lazy - AV Plugin - v1.4
  * http://jquery.eisbehr.de/lazy/
  *
- * Copyright 2012 - 2017, Daniel 'Eisbehr' Kern
+ * Copyright 2012 - 2018, Daniel 'Eisbehr' Kern
  *
  * Dual licensed under the MIT and GPL-2.0 licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -30,30 +30,32 @@
     //   <data-track kind="descriptions" src="descriptions.vtt" srclang="en"></data-track>
     //   <data-track kind="subtitles" src="subtitles.vtt" srclang="de"></data-track>
     // </video>
-    $.lazy(["av", "audio", "video"], ["audio", "video"], function(element, response) {
+    $.lazy(['av', 'audio', 'video'], ['audio', 'video'], function(element, response) {
         var elementTagName = element[0].tagName.toLowerCase();
 
-        if( elementTagName === "audio" || elementTagName === "video" ) {
-            var srcAttr = "data-src",
+        if (elementTagName === 'audio' || elementTagName === 'video') {
+            var srcAttr = 'data-src',
                 sources = element.find(srcAttr),
-                tracks = element.find("data-track"),
+                tracks = element.find('data-track'),
                 sourcesInError = 0,
 
             // create on error callback for sources
             onError = function() {
-                if( ++sourcesInError === sources.length )
+                if (++sourcesInError === sources.length) {
                     response(false);
+                }
             },
 
             // create callback to handle a source or track entry
             handleSource = function() {
                 var source = $(this),
                     type = source[0].tagName.toLowerCase(),
-                    attributes = source.prop("attributes"),
-                    target = $(type === srcAttr ? "<source>" : "<track>");
+                    attributes = source.prop('attributes'),
+                    target = $(type === srcAttr ? '<source>' : '<track>');
 
-                if( type === srcAttr )
-                    target.one("error", onError);
+                if (type === srcAttr) {
+                    target.one('error', onError);
+                }
 
                 $.each(attributes, function(index, attribute) {
                     target.attr(attribute.name, attribute.value);
@@ -63,36 +65,38 @@
             };
 
             // create event for successfull load
-            element.one("loadedmetadata", function() {
+            element.one('loadedmetadata', function() {
                 response(true);
             })
 
             // remove default callbacks to ignore loading poster image
-            .off("load error")
+            .off('load error')
 
             // load poster image
-            .attr("poster", element.attr("data-poster"));
+            .attr('poster', element.attr('data-poster'));
 
             // load by child tags
-            if( sources.length )
+            if (sources.length) {
                 sources.each(handleSource);
+            }
 
             // load by attribute
-            else if( element.attr(srcAttr) ) {
+            else if (element.attr(srcAttr)) {
                 // split for every entry by comma
-                $.each(element.attr(srcAttr).split(","), function(index, value) {
+                $.each(element.attr(srcAttr).split(','), function(index, value) {
                     // split again for file and file type
-                    var parts = value.split("|");
+                    var parts = value.split('|');
 
                     // create a source entry
-                    element.append($("<source>")
-                           .one("error", onError)
+                    element.append($('<source>')
+                           .one('error', onError)
                            .attr({src: parts[0].trim(), type: parts[1].trim()}));
                 });
 
                 // remove now obsolete attribute
-                if( this.config("removeAttribute") )
+                if (this.config('removeAttribute')) {
                     element.removeAttr(srcAttr);
+                }
             }
 
             else {
@@ -102,8 +106,9 @@
             }
 
             // load optional tracks
-            if( tracks.length )
+            if (tracks.length) {
                 tracks.each(handleSource);
+            }
         }
 
         else {

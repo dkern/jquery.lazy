@@ -100,14 +100,14 @@ For more examples, take a look at the [existing plugins](https://github.com/eisb
 
 
 ## AJAX Loader
-**Names:** `ajax`, `get`, `post`  
+**Names:** `ajax`, `get`, `post`, `put`  
 **Parameters:** `data-src`, `data-method`, `data-type`  
 **Default for:** -
 
 The AJAX loader can receive data from a given url and paste the response to the inner html of the element.
 This is useful, when you want do load a bigger amount of content.
 Use `ajax` as the loader name by default.
-But there are even some shorthand names for specific request types `GET` and `POST` too.
+But there are even some shorthand names for specific request types `GET`, `POST` and `PUT` too.
 ```HTML
 <!-- simple GET request -->
 <div data-loader="ajax" data-src="ajax.html"></div>
@@ -120,6 +120,23 @@ But there are even some shorthand names for specific request types `GET` and `PO
 
 <!-- POST request-->
 <div data-loader="post" data-src="ajax.html"></div>
+
+<!-- PUT request-->
+<div data-loader="put" data-src="ajax.html"></div>
+```
+
+On `POST` and `PUT` requests, the callback `ajaxCreateData` will be executed before every AJAX call.
+If used, the callback function should return the value for the `data` parameter of jQuery's AJAX function.
+```HTML
+<div data-loader="post" data-src="ajax.html" data-value="post-data"></div>
+```
+
+```JS
+$('div').Lazy({
+   ajaxCreateData: function(element) {
+       return {name: element.data('value')};
+   } 
+});
 ```
 
 
