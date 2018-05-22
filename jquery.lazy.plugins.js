@@ -1,5 +1,5 @@
 /*!
- * jQuery & Zepto Lazy - AJAX Plugin - v1.3
+ * jQuery & Zepto Lazy - AJAX Plugin - v1.4
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2018, Daniel 'Eisbehr' Kern
@@ -41,7 +41,7 @@
      * @param {string} [method]
      */
     function ajaxRequest(instance, element, response, method) {
-        method = method.toUpperCase();
+        method = method ? method.toUpperCase() : 'GET';
 
         var data;
         if ((method === 'POST' || method === 'PUT') && instance.config('ajaxCreateData')) {
