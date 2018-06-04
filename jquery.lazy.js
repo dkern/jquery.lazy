@@ -1,5 +1,6 @@
 /*!
- * jQuery & Zepto Lazy - v1.7.9
+ * jQuery & Zepto Lazy
+ * INTERSECTION OBSERVER PROTOTYPE
  * http://jquery.eisbehr.de/lazy/
  *
  * Copyright 2012 - 2018, Daniel 'Eisbehr' Kern
@@ -11,7 +12,7 @@
  * $("img.lazy").lazy();
  */
 
-;(function(window, undefined) {
+;(function(document, window, undefined) {
     "use strict";
 
     // noinspection JSUnresolvedVariable
@@ -180,7 +181,14 @@
          * @access private
          * @type {string}
          */
-        _backgroundImage = 'background-image';
+        _backgroundImage = 'background-image',
+
+        /**
+         * intersection observer instance
+         * @access private
+         * @type {IntersectionObserver}
+         */
+        _observer;
 
         /**
          * initialize plugin
@@ -192,6 +200,13 @@
             // detect actual device pixel ratio
             // noinspection JSUnresolvedVariable
             _isRetinaDisplay = window.devicePixelRatio > 1;
+
+            // create intersection observer instance
+            _observer = new IntersectionObserver(observerCallback, {
+                root: config.appendScroll,
+                rootMargin: config.threshold,
+                threshold: .001
+            });
 
             // prepare all initial items
             items = _prepareItems(items);
@@ -247,13 +262,23 @@
                     }
                 };
 
-                // load initial items
-                _lazyLoadItems();
-
-                // bind lazy load functions to scroll and resize event
-                // noinspection JSUnresolvedVariable
-                $(config.appendScroll).on('scroll.' + namespace + ' resize.' + namespace, events.e);
+                // create function to destroy observer
+                events.d = function() {
+                    _observer.disconnect();
+                };
             }
+        }
+
+        /**
+         * get observer callback function
+         * @return {Function}
+         */
+        function observerCallback(entries) {
+            _lazyLoadItems(false, entries.filter(function(entry) {
+                return entry.isIntersecting;
+            }).map(function(entry) {
+                return entry.target;
+            }));
         }
 
         /**
@@ -307,6 +332,8 @@
                 else if (tag !== _img && placeholder && (!element.css(_backgroundImage) || element.css(_backgroundImage) === 'none')) {
                     element.css(_backgroundImage, "url('" + placeholder + "')");
                 }
+
+                _observer.observe(items[i]);
             }
 
             return items;
@@ -340,7 +367,7 @@
             // loop all available items
             for (var i = 0; i < elements.length; i++) {
                 // item is at least in loadable area
-                if (allItems || forced || _isInLoadableArea(elements[i])) {
+                if (allItems || forced) {
                     var element = $(elements[i]),
                         tag = _getElementTagName(elements[i]),
                         attribute = element.attr(config.attribute),
@@ -367,6 +394,9 @@
 
                         // load item
                         _handleItem(element, tag, elementImageBase, customLoader);
+
+                        // remove from observer
+                        _observer.unobserve(elements[i]);
                     }
                 }
             }
@@ -517,53 +547,6 @@
                 // call after load even on cached image
                 imageObj.complete && imageObj.trigger(_load); // jshint ignore : line
             }
-        }
-
-        /**
-         * check if the given element is inside the current viewport or threshold
-         * @access private
-         * @param {object} element
-         * @return {boolean}
-         */
-        function _isInLoadableArea(element) {
-            var elementBound = element.getBoundingClientRect(),
-                direction    = config.scrollDirection,
-                threshold    = config.threshold,
-                vertical     = // check if element is in loadable area from top
-                               ((_getActualHeight() + threshold) > elementBound.top) &&
-                               // check if element is even in loadable are from bottom
-                               (-threshold < elementBound.bottom),
-                horizontal   = // check if element is in loadable area from left
-                               ((_getActualWidth() + threshold) > elementBound.left) &&
-                               // check if element is even in loadable area from right
-                               (-threshold < elementBound.right);
-
-            if (direction === 'vertical') {
-                return vertical;
-            }
-            else if (direction === 'horizontal') {
-                return horizontal;
-            }
-
-            return vertical && horizontal;
-        }
-
-        /**
-         * receive the current viewed width of the browser
-         * @access private
-         * @return {number}
-         */
-        function _getActualWidth() {
-            return _actualWidth >= 0 ? _actualWidth : (_actualWidth = $(window).width());
-        }
-
-        /**
-         * receive the current viewed height of the browser
-         * @access private
-         * @return {number}
-         */
-        function _getActualHeight() {
-            return _actualHeight >= 0 ? _actualHeight : (_actualHeight = $(window).height());
         }
 
         /**
@@ -799,6 +782,9 @@
          * @return undefined
          */
         _instance.destroy = function() {
+            // disconnect intersection observer
+            _events.d ? _events.d() : {};
+
             // unbind instance generated events
             // noinspection JSUnresolvedFunction, JSUnresolvedVariable
             $(_config.appendScroll).off('.' + _namespace, _events.e);
@@ -828,10 +814,9 @@
         chainable          : true,
         autoDestroy        : true,
         bind               : 'load',
-        threshold          : 500,
+        threshold          : '500px',
         visibleOnly        : false,
-        appendScroll       : window,
-        scrollDirection    : 'both',
+        appendScroll       : document.window,
         imageBase          : null,
         defaultImage       : 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
         placeholder        : null,
@@ -869,4 +854,4 @@
     $(window).on('load', function() {
         windowLoaded = true;
     });
-})(window);
+})(document, window);
