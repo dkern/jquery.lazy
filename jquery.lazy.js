@@ -526,7 +526,13 @@
          * @return {boolean}
          */
         function _isInLoadableArea(element) {
-            var elementBound = element.getBoundingClientRect(),
+            var elementBound;
+            try {
+              elementBound = element.getBoundingClientRect();
+            } catch (err) {
+              elementBound = $(element).offset();
+            }
+            var direction = config.scrollDirection,
                 direction    = config.scrollDirection,
                 threshold    = config.threshold,
                 vertical     = // check if element is in loadable area from top
