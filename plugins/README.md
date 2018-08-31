@@ -283,7 +283,7 @@ There is no way to check if the video was loaded correctly or your provided vide
 
 ## YouTube Video Loader
 **Names:** `yt`, `youtube`  
-**Parameters:** `data-src`  
+**Parameters:** `data-src`, `data-nocookie`  
 **Default for:** -
 
 Loads youtube videos in an `<iframe>`.
@@ -291,8 +291,16 @@ This is the suggested way by youtube itself.
 You can prepare the `<iframe>` element as you would do without Lazy.
 Only add the youtube video id to the attribute `data-src` and add the loader name.
 That's all.
+
 ```HTML
 <iframe data-loader="youtube" data-src="1AYGnw6MwFM" width="560" height="315" frameborder="0"></iframe>
+```
+
+If you want to, you can control the cookie behavior of the embedded video with `data-nocookie="1"`.
+This would change the url to `youtube-nocookie.com` instead of `youtube.com`.
+
+```HTML
+<iframe data-loader="youtube" data-src="1AYGnw6MwFM" data-nocookie="1" width="560" height="315" frameborder="0"></iframe>
 ```
 
 **Please keep in mind:**
