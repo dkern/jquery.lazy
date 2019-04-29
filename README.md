@@ -91,7 +91,7 @@ $ bower install jquery-lazy
 
 
 ## Basic Usage
-1.) The basic usage of Lazy ist pretty easy.
+1.) The basic usage of Lazy is pretty easy.
 First of all you need to prepare all elements you want to lazy load. 
 By default add a `data-src` attribute to images containing the loadable image and/or a `data-loader` attribute to elements witch shall use a [plugin](#loader-plugins) or [custom loaders](#custom-content-loaders).
 ```HTML
