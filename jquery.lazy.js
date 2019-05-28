@@ -252,7 +252,7 @@
 
                 // bind lazy load functions to scroll and resize event
                 // noinspection JSUnresolvedVariable
-                $(config.appendScroll).on('scroll.' + namespace + ' resize.' + namespace, events.e);
+                $(config.appendScroll).on('scroll.' + namespace + ' resize.' + namespace + ' change mouseenter mouseleave', events.e);
             }
         }
 
@@ -350,7 +350,7 @@
                         // is not already handled 
                     if (!element.data(handledName) &&
                         // and is visible or visibility doesn't matter
-                        (!config.visibleOnly || element.is(':visible')) && (
+                        (!config.visibleOnly || _isRendered(element)) && (
                         // and image source or source set attribute is available
                         (attribute || element.attr(srcsetAttribute)) && (
                             // and is image tag where attribute is not equal source or source set
@@ -661,6 +661,21 @@
             return false;
         }
 
+        function _isRendered(domObj) {
+            if ((domObj.nodeType != 1) || (domObj == document.body)) {
+                return true;
+            }
+            if (domObj.currentStyle && domObj.currentStyle["display"] != "none" && domObj.currentStyle["visibility"] != "hidden") {
+                return _isRendered(domObj.parentNode);
+            } else if (window.getComputedStyle) {
+                var cs = document.defaultView.getComputedStyle(domObj, null);
+                if (cs.getPropertyValue("display") != "none" && cs.getPropertyValue("visibility") != "hidden") {
+                    return _isRendered(domObj.parentNode);
+                }
+            }
+            return false;
+        }
+
         // if event driven or window is already loaded don't wait for page loading
         if (config.bind === 'event' || windowLoaded) {
             _initialize();
@@ -672,6 +687,7 @@
             $(window).on(_load + '.' + namespace, _initialize);
         }  
     }
+
 
     /**
      * lazy plugin class constructor
