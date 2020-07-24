@@ -1,9 +1,9 @@
 ### jQuery Lazy - Loader Plugins
-[![GitHub version](https://badge.fury.io/gh/eisbehr-%2Fjquery.lazy.svg)](http://github.com/eisbehr-/jquery.lazy)
+[![GitHub version](https://badge.fury.io/gh/dkern%2Fjquery.lazy.svg)](http://github.com/dkern/jquery.lazy)
 [![NPM version](https://badge.fury.io/js/jquery-lazy.svg)](http://www.npmjs.org/package/jquery-lazy)
 [![Bower version](https://badge.fury.io/bo/jquery-lazy.svg)](http://bower.io/search/?q=jquery-lazy)
-[![Dependencies Status](https://david-dm.org/eisbehr-/jquery.lazy/status.svg)](https://david-dm.org/eisbehr-/jquery.lazy)
-[![devDependencies Status](https://david-dm.org/eisbehr-/jquery.lazy/dev-status.svg)](https://david-dm.org/eisbehr-/jquery.lazy?type=dev)
+[![Dependencies Status](https://david-dm.org/dkern/jquery.lazy/status.svg)](https://david-dm.org/dkern/jquery.lazy)
+[![devDependencies Status](https://david-dm.org/dkern/jquery.lazy/dev-status.svg)](https://david-dm.org/dkern/jquery.lazy?type=dev)
 
 ---
 
@@ -27,7 +27,7 @@
 
 ## Document Note
 This is not the main readme file of this project.
-Please go to the [project root](https://github.com/eisbehr-/jquery.lazy) and take a look in the [README.md](https://github.com/eisbehr-/jquery.lazy/blob/master/README.md) to learn more about the basics of Lazy. 
+Please go to the [project root](https://github.com/dkern/jquery.lazy) and take a look in the [README.md](https://github.com/dkern/jquery.lazy/blob/master/README.md) to learn more about the basics of Lazy. 
 
 
 ## About Loader Plugins
@@ -96,7 +96,7 @@ If you want to do so anyway, use a most specific selector for jQuery or Zepto.
 })(window.jQuery || window.Zepto);
 ```
 
-For more examples, take a look at the [existing plugins](https://github.com/eisbehr-/jquery.lazy/tree/master/plugins).
+For more examples, take a look at the [existing plugins](https://github.com/dkern/jquery.lazy/tree/master/plugins).
 
 
 ## AJAX Loader
@@ -309,7 +309,7 @@ There is no way to check if the video was loaded correctly or your provided vide
 
 
 ## Bugs / Feature request
-Please [report](http://github.com/eisbehr-/jquery.lazy/issues) bugs and feel free to [ask](http://github.com/eisbehr-/jquery.lazy/issues) for new features and loaders directly on GitHub.
+Please [report](http://github.com/dkern/jquery.lazy/issues) bugs and feel free to [ask](http://github.com/dkern/jquery.lazy/issues) for new features and loaders directly on GitHub.
 
 
 ## License

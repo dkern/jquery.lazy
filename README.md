@@ -1,9 +1,9 @@
 ### jQuery & Zepto Lazy - Delayed Content, Image and Background Loader
-[![GitHub version](https://badge.fury.io/gh/eisbehr-%2Fjquery.lazy.svg)](http://github.com/eisbehr-/jquery.lazy)
+[![GitHub version](https://badge.fury.io/gh/dkern%2Fjquery.lazy.svg)](http://github.com/dkern/jquery.lazy)
 [![NPM version](https://badge.fury.io/js/jquery-lazy.svg)](http://www.npmjs.org/package/jquery-lazy)
 [![Bower version](https://badge.fury.io/bo/jquery-lazy.svg)](http://bower.io/search/?q=jquery-lazy)
-[![Dependencies Status](https://david-dm.org/eisbehr-/jquery.lazy/status.svg)](https://david-dm.org/eisbehr-/jquery.lazy)
-[![devDependencies Status](https://david-dm.org/eisbehr-/jquery.lazy/dev-status.svg)](https://david-dm.org/eisbehr-/jquery.lazy?type=dev)
+[![Dependencies Status](https://david-dm.org/dkern/jquery.lazy/status.svg)](https://david-dm.org/dkern/jquery.lazy)
+[![devDependencies Status](https://david-dm.org/dkern/jquery.lazy/dev-status.svg)](https://david-dm.org/dkern/jquery.lazy?type=dev)
 
 ---
 
@@ -47,7 +47,7 @@ But Lazy is even able to load any other content you want by [plugins](#loader-pl
 Lazy will work with a wide range of browsers and support jQuery versions for years backwards and Zepto as alternative. 
 You can pick any version since jQuery 1.7.2 or Zepto 1.1.6 or greater.
 There is no way to guarantee, that Lazy will work with all browsers, but all I've tested worked great so far.
-If you find any problems in specific browsers, [please let me know](http://github.com/eisbehr-/jquery.lazy/issues). 
+If you find any problems in specific browsers, [please let me know](http://github.com/dkern/jquery.lazy/issues). 
 
 **Tested in:** IE, Chrome (+ mobile), Firefox (+ mobile), Safari (+ mobile) and Android Browser.
 
@@ -65,8 +65,8 @@ Some examples below:
 Lazy and all plugins are available over [cdnjs](http://cdnjs.com) and [jsDelivr](http://jsdelivr.com) CDN and can directly included to every page.
 ```HTML
 <!-- jsDeliver -->
-<script type="text/javascript" src="//cdn.jsdelivr.net/gh/eisbehr-/jquery.lazy@1.7.10/jquery.lazy.min.js"></script>
-<script type="text/javascript" src="//cdn.jsdelivr.net/gh/eisbehr-/jquery.lazy@1.7.10/jquery.lazy.plugins.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/gh/dkern/jquery.lazy@1.7.10/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/gh/dkern/jquery.lazy@1.7.10/jquery.lazy.plugins.min.js"></script>
 
 <!-- cdnjs -->
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.10/jquery.lazy.min.js"></script>
@@ -74,7 +74,7 @@ Lazy and all plugins are available over [cdnjs](http://cdnjs.com) and [jsDelivr]
 ```
 
 #### Self-Hosted
-[Download](https://github.com/eisbehr-/jquery.lazy/archive/master.zip) and save one of two available files to include Lazy to your page, either the [development](http://raw.githubusercontent.com/eisbehr-/jquery.lazy/master/jquery.lazy.js) or the [minified](http://raw.githubusercontent.com/eisbehr-/jquery.lazy/master/jquery.lazy.min.js) version.
+[Download](https://github.com/dkern/jquery.lazy/archive/master.zip) and save one of two available files to include Lazy to your page, either the [development](http://raw.githubusercontent.com/dkern/jquery.lazy/master/jquery.lazy.js) or the [minified](http://raw.githubusercontent.com/dkern/jquery.lazy/master/jquery.lazy.min.js) version.
 ```HTML
 <script type="text/javascript" src="jquery.lazy.min.js"></script>
 ```
@@ -183,7 +183,7 @@ It is basically the same as the [custom content loaders](#custom-content-loaders
 With custom content loaders you have to initialize each instance on setup with the loader.
 With plugins you only load the plugin file and you're done for all instances from now on. 
 
-For more information and examples, take a look at the [existing plugins](https://github.com/eisbehr-/jquery.lazy/tree/master/plugins) or the [readme.md](https://github.com/eisbehr-/jquery.lazy/tree/master/plugins/README.md) in there.
+For more information and examples, take a look at the [existing plugins](https://github.com/dkern/jquery.lazy/tree/master/plugins) or the [readme.md](https://github.com/dkern/jquery.lazy/tree/master/plugins/README.md) in there.
 
 
 ## Configuration Parameters
@@ -249,7 +249,7 @@ watch          | watches all files to check & build everything on change
 
 
 ## Bugs / Feature request
-Please [report](http://github.com/eisbehr-/jquery.lazy/issues) bugs and feel free to [ask](http://github.com/eisbehr-/jquery.lazy/issues) for new features directly on GitHub.
+Please [report](http://github.com/dkern/jquery.lazy/issues) bugs and feel free to [ask](http://github.com/dkern/jquery.lazy/issues) for new features directly on GitHub.
 
 
 ## License
