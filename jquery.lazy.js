@@ -526,6 +526,9 @@
          * @return {boolean}
          */
         function _isInLoadableArea(element) {
+            if (window.getComputedStyle(element).display === "none") {
+                return false;
+            }
             var elementBound = element.getBoundingClientRect(),
                 direction    = config.scrollDirection,
                 threshold    = config.threshold,
