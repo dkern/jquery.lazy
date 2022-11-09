@@ -869,4 +869,6 @@
     $(window).on('load', function() {
         windowLoaded = true;
     });
+
+    window.LazyPlugin = LazyPlugin;
 })(window);
